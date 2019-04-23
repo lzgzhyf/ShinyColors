@@ -774,7 +774,8 @@
     origin: 'https://biuuu.github.io/ShinyColors',
     hash: '',
     localHash: '',
-    version: version
+    version: version,
+    timeout: 20
   };
 
   const getLocalConfig = () => {
@@ -789,7 +790,7 @@
       config.origin = origin.trim();
     }
 
-    const keys = [];
+    const keys = ['timeout'];
     keys.forEach(key => {
       let value = setting[key];
       if (isString_1(value)) value = value.trim();
@@ -862,7 +863,6 @@
     return new Promise((rev, rej) => {
       let timer = setTimeout(() => {
         rej("\u52A0\u8F7D".concat(pathname, "\u8D85\u65F6"));
-        timeoutStyle();
       }, config.timeout * 1000);
       ee.once("response".concat(flag), function (data) {
         clearTimeout(timer);
@@ -908,7 +908,6 @@
       return new Promise((rev, rej) => {
         let timer = setTimeout(() => {
           rej("\u52A0\u8F7D".concat(pathname, "\u8D85\u65F6"));
-          timeoutStyle();
         }, config.timeout * 1000);
         fetch("".concat(origin).concat(pathname)).then(res => {
           clearTimeout(timer);
@@ -1061,8 +1060,31 @@
     return phraseMap;
   };
 
+  const getPhraseObj = () => {
+    let phrases;
+
+    try {
+      const modulePhrases = primJsp([], [], [4]);
+      phrases = modulePhrases.default._polyglot.phrases;
+    } catch (e) {
+      console.error(e);
+    }
+
+    return phrases;
+  };
+
+  async function transPhrase() {
+    const phraseMap = await getPhrase();
+    const obj = getPhraseObj();
+    if (!obj) return;
+
+    for (let [key, value] of phraseMap) {
+      obj[key] = value;
+    }
+  }
+
   const main = () => {
-    getPhrase();
+    transPhrase();
   };
 
   window.addEventListener('load', main);
