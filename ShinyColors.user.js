@@ -458,8 +458,6 @@
     return str.trim();
   };
 
-  restoreConsole();
-
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function createCommonjsModule(fn, module) {
@@ -984,7 +982,7 @@
         header: true
       }).data;
     } catch (err) {
-      console.error(err);
+      console.log(err);
       return {};
     }
   };
@@ -1009,7 +1007,7 @@
 
       return data[type];
     } catch (err) {
-      console.error(err);
+      console.log(err);
     }
 
     return false;
@@ -1025,7 +1023,7 @@
     try {
       sessionStorage.setItem('sczh:data', str);
     } catch (err) {
-      console.error(err);
+      console.log(err);
     }
   };
 
@@ -1067,7 +1065,7 @@
       const modulePhrases = primJsp([], [], [4]);
       phrases = modulePhrases.default._polyglot.phrases;
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
 
     return phrases;
@@ -1079,12 +1077,129 @@
     if (!obj) return;
 
     for (let [key, value] of phraseMap) {
-      obj[key] = value;
+      obj[key] = "\u200B".concat(value);
     }
+  }
+
+  /**
+   * Checks if `value` is the
+   * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+   * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+   * @example
+   *
+   * _.isObject({});
+   * // => true
+   *
+   * _.isObject([1, 2, 3]);
+   * // => true
+   *
+   * _.isObject(_.noop);
+   * // => true
+   *
+   * _.isObject(null);
+   * // => false
+   */
+  function isObject(value) {
+    var type = typeof value;
+    return value != null && (type == 'object' || type == 'function');
+  }
+
+  var isObject_1 = isObject;
+
+  const commonMap = new Map();
+  let loaded$1 = false;
+
+  const getCommMap = async () => {
+    if (!loaded$1) {
+      let csv = await getLocalData('common');
+
+      if (!csv) {
+        csv = await fetchWithHash('/data/common.csv');
+        setLocalData('common', csv);
+      }
+
+      const list = parseCsv(csv);
+      list.forEach(item => {
+        if (item && item.ja) {
+          const _ja = trim(item.ja);
+
+          const _zh = trim(item.zh);
+
+          if (_ja && _zh) {
+            commonMap.set(_ja, _zh);
+          }
+        }
+      });
+      loaded$1 = true;
+    }
+
+    return commonMap;
+  };
+
+  async function watchText() {
+    if (!GLOBAL.aoba) return;
+    const commMap = await getCommMap();
+    const Text = new Proxy(aoba.Text, {
+      construct(target, args, newTarget) {
+        const text = args[0];
+        const option = args[1];
+
+        if (text && isString_1(text)) {
+          GLOBAL.console.log(...args);
+
+          if (text.startsWith('\u200b')) {
+            // 是被替换过的文本
+            args[0] = text.slice(1);
+
+            if (isObject_1(option)) {
+              if (option.fontFamily === 'UDKakugo_SmallPr6-B') {
+                args[1].fontFamily = 'FZLanTingHeiS-DB-GB';
+              } else if (option.fontFamily === 'HummingStd-E') {
+                args[1].fontFamily = 'FZCuYuanSongS-R-GB';
+              }
+            }
+          } else if (text.trim()) {
+            if (commMap.has(text)) {
+              args[0] = commMap.get(text);
+            }
+          }
+        }
+
+        return Reflect.construct(target, args, newTarget);
+      }
+
+    }); // watch typeText
+
+    const originTypeText = aoba.Text.prototype.typeText;
+
+    aoba.Text.prototype.typeText = function (...args) {
+      console.log('type text', ...args);
+      return originTypeText.apply(this, args);
+    };
+
+    GLOBAL.aoba = new Proxy(aoba, {
+      get(target, name, receiver) {
+        if (name === 'Text') {
+          return Text;
+        }
+
+        return Reflect.get(target, name, receiver);
+      }
+
+    });
   }
 
   const main = () => {
     transPhrase();
+    watchText();
+    GLOBAL && (GLOBAL.console = restoreConsole());
   };
 
   window.addEventListener('load', main);
