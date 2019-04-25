@@ -1143,6 +1143,16 @@
     return commonMap;
   };
 
+  const replaceFont = option => {
+    if (isObject_1(option)) {
+      if (option.fontFamily === 'UDKakugo_SmallPr6-B') {
+        option.fontFamily = 'Source Han Sans SC Medium';
+      } else if (option.fontFamily === 'HummingStd-E') {
+        option.fontFamily = 'FZCuYuanSongS-R-GB';
+      }
+    }
+  };
+
   async function watchText() {
     if (!GLOBAL.aoba) return;
     const commMap = await getCommMap();
@@ -1157,17 +1167,11 @@
           if (text.startsWith('\u200b')) {
             // 是被替换过的文本
             args[0] = text.slice(1);
-
-            if (isObject_1(option)) {
-              if (option.fontFamily === 'UDKakugo_SmallPr6-B') {
-                args[1].fontFamily = 'FZLanTingHeiS-DB-GB';
-              } else if (option.fontFamily === 'HummingStd-E') {
-                args[1].fontFamily = 'FZCuYuanSongS-R-GB';
-              }
-            }
+            replaceFont(option);
           } else if (text.trim()) {
             if (commMap.has(text)) {
               args[0] = commMap.get(text);
+              replaceFont(option);
             }
           }
         }
@@ -1182,7 +1186,13 @@
     aoba.Text.prototype.typeText = function (...args) {
       console.log('type text', ...args);
       return originTypeText.apply(this, args);
-    };
+    }; // watch drawLetterSpacing
+    // const originDrawLetter = aoba.Text.prototype.drawLetterSpacing
+    // aoba.Text.prototype.drawLetterSpacing = function (...args) {
+    //   console.log('draw letter', ...args)
+    //   return originDrawLetter.apply(this, args)
+    // }
+
 
     GLOBAL.aoba = new Proxy(aoba, {
       get(target, name, receiver) {
