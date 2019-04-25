@@ -1313,7 +1313,7 @@
     const originGet = request.get;
 
     request.get = async function (...args) {
-      console.log(...args);
+      // console.log(...args)
       const type = args[0];
       const res = await originGet.apply(this, args);
       if (!type) return res;
