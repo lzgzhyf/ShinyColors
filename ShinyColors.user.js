@@ -1288,7 +1288,6 @@
     }
 
     autoTransCache.set(text, result);
-    saveAutoTrans();
     return result;
   };
 
@@ -1320,7 +1319,7 @@
       if (/^userSupportIdols\/\d+$/.test(type)) {
         const sskill = res.body.supportSkills;
         sskill.forEach(item => {
-          item.description = replaceSkill(item.description, supportSkillData);
+          item.description = '\u200b' + replaceSkill(item.description, supportSkillData);
         });
       }
 
