@@ -894,11 +894,10 @@
 
   const tryFetch = async () => {
     if (window.fetch) {
-      if (sessionStorage.getItem('sczh:cors') === 'disabled') {
-        fetchInfo.status = 'finished';
-        return;
-      }
-
+      // if (sessionStorage.getItem('sczh:cors') === 'disabled') {
+      //   fetchInfo.status = 'finished'
+      //   return
+      // }
       try {
         const res = await fetch("".concat(origin, "/manifest.json"));
         const data = await res.json();
