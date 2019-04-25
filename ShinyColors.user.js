@@ -774,6 +774,12 @@
     REQUEST: 2,
     PHRASE: 4
   };
+  const FONT = {
+    HEITI_JA: 'UDKakugo_SmallPr6-B',
+    HEITI_TRANS: 'Source Han Sans SC Medium',
+    YUAN_JA: 'HummingStd-E',
+    YUAN_TRANS: 'FZCuYuanSongS-R-GB'
+  };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
     hash: '',
@@ -1064,6 +1070,10 @@
     return phraseMap;
   };
 
+  const tagText = text => {
+    return "\u200B\u200B".concat(text);
+  };
+
   const getPhraseObj = () => {
     let phrases;
 
@@ -1083,7 +1093,7 @@
     if (!obj) return;
 
     for (let [key, value] of phraseMap) {
-      obj[key] = "\u200B".concat(value);
+      obj[key] = tagText(value);
     }
   }
 
@@ -1151,10 +1161,20 @@
 
   const replaceFont = option => {
     if (isObject_1(option)) {
-      if (option.fontFamily === 'UDKakugo_SmallPr6-B') {
-        option.fontFamily = 'Source Han Sans SC Medium';
-      } else if (option.fontFamily === 'HummingStd-E') {
-        option.fontFamily = 'FZCuYuanSongS-R-GB';
+      if (option.fontFamily === FONT.HEITI_JA) {
+        option.fontFamily = FONT.HEITI_TRANS;
+      } else if (option.fontFamily === FONT.YUAN_JA) {
+        option.fontFamily = FONT.YUAN_TRANS;
+      }
+    }
+  };
+
+  const restoreFont = option => {
+    if (isObject_1(option)) {
+      if (option.fontFamily === FONT.HEITI_TRANS) {
+        option.fontFamily = FONT.HEITI_JA;
+      } else if (option.fontFamily === FONT.YUAN_TRANS) {
+        option.fontFamily = FONT.YUAN_JA;
       }
     }
   };
@@ -1169,7 +1189,7 @@
 
         if (text && isString_1(text)) {
           //GLOBAL.console.log(...args)
-          if (text.startsWith('\u200b')) {
+          if (text.startsWith('\u200b\u200b')) {
             // 是被替换过的文本
             args[0] = text.slice(1);
             replaceFont(option);
@@ -1177,6 +1197,8 @@
             if (commMap.has(text)) {
               args[0] = commMap.get(text);
               replaceFont(option);
+            } else if (!text.startsWith('\u200b')) {
+              restoreFont(option);
             }
           }
         }
@@ -1189,7 +1211,7 @@
     const originTypeText = aoba.Text.prototype.typeText;
 
     aoba.Text.prototype.typeText = function (...args) {
-      console.log('type text', ...args);
+      ENVIRONMENT === 'development' && console.log('type text', ...args);
       return originTypeText.apply(this, args);
     }; // watch drawLetterSpacing
     // const originDrawLetter = aoba.Text.prototype.drawLetterSpacing
@@ -1321,7 +1343,7 @@
       if (/^userSupportIdols\/\d+$/.test(type)) {
         const sskill = res.body.supportSkills;
         sskill.forEach(item => {
-          item.description = '\u200b' + replaceSkill(item.description, supportSkillData);
+          item.description = tagText(replaceSkill(item.description, supportSkillData));
         });
       }
 
