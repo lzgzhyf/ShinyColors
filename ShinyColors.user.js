@@ -768,6 +768,10 @@
 
   var version = "0.0.2";
 
+  const MODULE_ID = {
+    REQUEST: 2,
+    PHRASE: 4
+  };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
     hash: '',
@@ -1062,7 +1066,7 @@
     let phrases;
 
     try {
-      const modulePhrases = primJsp([], [], [4]);
+      const modulePhrases = primJsp([], [], [MODULE_ID.PHRASE]);
       phrases = modulePhrases.default._polyglot.phrases;
     } catch (e) {
       console.log(e);
@@ -1162,8 +1166,7 @@
         const option = args[1];
 
         if (text && isString_1(text)) {
-          GLOBAL.console.log(...args);
-
+          //GLOBAL.console.log(...args)
           if (text.startsWith('\u200b')) {
             // 是被替换过的文本
             args[0] = text.slice(1);
@@ -1206,10 +1209,91 @@
     });
   }
 
-  const main = () => {
-    transPhrase();
-    watchText();
-    GLOBAL && (GLOBAL.console = restoreConsole());
+  const supportSkillMap = new Map();
+  const nounMap = new Map();
+  const nounArr = [];
+  let supportLoaded = false;
+
+  const getSupportSkill = async () => {
+    if (!supportLoaded) {
+      let csv = await getLocalData('support-skill');
+
+      if (!csv) {
+        csv = await fetchWithHash('/data/support-skill.csv');
+        setLocalData('support-skill', csv);
+      }
+
+      const list = parseCsv(csv);
+      list.forEach(item => {
+        if (item && item.text) {
+          const text = trim(item.text);
+          const trans = trim(item.trans);
+          const type = trim(item.type);
+
+          if (text && trans) {
+            if (type === 'noun') {
+              nounArr.push(text);
+              nounMap.set(text, trans);
+            } else {
+              supportSkillMap.set(text, trans);
+            }
+          }
+        }
+      });
+      supportLoaded = true;
+    }
+
+    const nounRE = "(".concat(nounArr.join('|'), ")");
+    return {
+      skillMap: supportSkillMap,
+      nounMap,
+      nounRE
+    };
+  };
+
+  const getRequest = () => {
+    let request;
+
+    try {
+      const moduleRequest = primJsp([], [], [MODULE_ID.REQUEST]);
+      request = moduleRequest.default;
+    } catch (e) {
+      console.log(e);
+    }
+
+    return request;
+  };
+
+  async function requestHook() {
+    const request = getRequest();
+    if (!request.get) return;
+    const supportSkillData = await getSupportSkill();
+    const originGet = request.get;
+
+    request.get = async function (...args) {
+      console.log(...args);
+      const type = args[0];
+      const res = await originGet.apply(this, args);
+      if (!type) return res;
+
+      if (/^userSupportIdols\/\d+$/.test(type)) {
+        const sskill = res.body.supportSkills;
+        sskill.forEach(item => {
+          item.description = replaceSkill(item.description, supportSkillData);
+        });
+      }
+
+      return res;
+    };
+  }
+
+  const main = async () => {
+    try {
+      GLOBAL && (GLOBAL.console = restoreConsole());
+      await Promise.all([transPhrase(), watchText(), requestHook()]);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   window.addEventListener('load', main);
