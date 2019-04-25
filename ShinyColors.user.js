@@ -12,6 +12,8 @@
 (function () {
   'use strict';
 
+  const ENVIRONMENT = "development";
+
   // Copyright Joyent, Inc. and other Node contributors.
 
   var R = typeof Reflect === 'object' ? Reflect : null;
@@ -1329,7 +1331,10 @@
 
   const main = async () => {
     try {
-      GLOBAL && (GLOBAL.console = restoreConsole());
+      if (ENVIRONMENT === 'development') {
+        GLOBAL && (GLOBAL.console = restoreConsole());
+      }
+
       await Promise.all([transPhrase(), watchText(), requestHook()]);
     } catch (e) {
       console.log(e);
