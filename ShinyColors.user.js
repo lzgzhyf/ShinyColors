@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.2
+// @version      0.0.3
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -768,7 +768,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.2";
+  var version = "0.0.3";
 
   const MODULE_ID = {
     REQUEST: 2,
