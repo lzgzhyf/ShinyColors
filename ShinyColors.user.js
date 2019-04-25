@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const ENVIRONMENT = "development";
+  const ENVIRONMENT = "";
 
   // Copyright Joyent, Inc. and other Node contributors.
 
