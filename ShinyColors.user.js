@@ -786,9 +786,9 @@
   };
   const FONT = {
     HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'Source Han Sans SC Medium',
+    HEITI_TRANS: 'HYQiHeiX1 75W',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'FZCuYuanSongS-R-GB'
+    YUAN_TRANS: 'Tensentype QinYuanJ W5'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
@@ -1365,9 +1365,24 @@
     };
   }
 
+  async function resourceHook() {
+    const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
+
+    aoba.loaders.Resource.prototype._loadElement = function (type) {
+      // if (type === 'image' && this.url.includes('8f5a4652a6d1d7a160fa5')) {
+      //   log(this.url, this.name)
+      // }
+      // if (this.name === 'images/ui/common/parts_buttons.json_image') {
+      //   this.url = 'https://biuuu.github.io/ShinyColors/data/123.png'
+      //   this.crossOrigin = true
+      // }
+      return originLoadElement.call(this, type);
+    };
+  }
+
   const main = async () => {
     try {
-      await Promise.all([transPhrase(), watchText(), requestHook()]);
+      await Promise.all([transPhrase(), watchText(), requestHook(), resourceHook()]);
     } catch (e) {
       console.log(e);
     }
