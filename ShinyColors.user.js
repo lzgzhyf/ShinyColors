@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.4
+// @version      0.0.5
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -460,6 +460,16 @@
     return str.trim();
   };
 
+  if (ENVIRONMENT === 'development') {
+    GLOBAL && (GLOBAL.console = restoreConsole());
+  }
+
+  const log = (...args) => {
+    if (ENVIRONMENT === 'development') {
+      GLOBAL.console.log(...args);
+    }
+  };
+
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function createCommonjsModule(fn, module) {
@@ -768,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.4";
+  var version = "0.0.5";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1187,7 +1197,7 @@
         const option = args[1];
 
         if (text && isString_1(text)) {
-          //GLOBAL.console.log(...args)
+          //log(...args)
           if (text.startsWith('\u200b\u200b')) {
             // 是被替换过的文本
             args[0] = text.slice(1);
@@ -1210,12 +1220,12 @@
     const originTypeText = aoba.Text.prototype.typeText;
 
     aoba.Text.prototype.typeText = function (...args) {
-      ENVIRONMENT === 'development' && console.log('type text', ...args);
+      log('type text', ...args);
       return originTypeText.apply(this, args);
     }; // watch drawLetterSpacing
     // const originDrawLetter = aoba.Text.prototype.drawLetterSpacing
     // aoba.Text.prototype.drawLetterSpacing = function (...args) {
-    //   console.log('draw letter', ...args)
+    //   log('draw letter', ...args)
     //   return originDrawLetter.apply(this, args)
     // }
 
@@ -1321,7 +1331,7 @@
       const moduleRequest = primJsp([], [], [MODULE_ID.REQUEST]);
       request = moduleRequest.default;
     } catch (e) {
-      console.log(e);
+      log(e);
     }
 
     return request;
@@ -1334,14 +1344,19 @@
     const originGet = request.get;
 
     request.get = async function (...args) {
-      // console.log(...args)
+      log(...args);
       const type = args[0];
       const res = await originGet.apply(this, args);
       if (!type) return res;
+      log(res.body);
 
-      if (/^userSupportIdols\/\d+$/.test(type)) {
+      if (/^userSupportIdols\/\d+$/.test(type) || type === 'userSupportIdols/statusMax') {
         const sskill = res.body.supportSkills;
+        const asskill = res.body.acquiredSupportSkills;
         sskill.forEach(item => {
+          item.description = tagText(replaceSkill(item.description, supportSkillData));
+        });
+        asskill && asskill.forEach(item => {
           item.description = tagText(replaceSkill(item.description, supportSkillData));
         });
       }
@@ -1352,10 +1367,6 @@
 
   const main = async () => {
     try {
-      if (ENVIRONMENT === 'development') {
-        GLOBAL && (GLOBAL.console = restoreConsole());
-      }
-
       await Promise.all([transPhrase(), watchText(), requestHook()]);
     } catch (e) {
       console.log(e);
