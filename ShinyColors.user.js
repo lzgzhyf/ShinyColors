@@ -1352,7 +1352,7 @@
 
   const replaceText$1 = (data, key) => {
     if (data[key] && missionMap$1.has(data[key])) {
-      data[key] = tagText(map.get(data[key]));
+      data[key] = tagText(missionMap$1.get(data[key]));
     }
   };
 
