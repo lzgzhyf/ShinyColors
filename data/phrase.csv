@@ -607,8 +607,8 @@ popPaymentLimitation.limitations,"16歳未満　：　1ヶ月5,400円まで16歳
 present.headerTitle,プレゼント,礼物
 present.noPresent.present,受け取れるプレゼントはありません,没有可领取的礼物
 present.noPresent.history,受け取り済みのプレゼントはありません,没有已领取的礼物
-present.present.title,%{name} ×%{num},%{name} ×%{num}
-present.present.presentNum,×%{num},×%{num}
+present.present.title,%{name} ×%{num},
+present.present.presentNum,×%{num},
 present.present.noExpire,期限なし,无期限
 present.present.expireTime,%{expire}まで,%{expire}截止
 present.main.count.title.received,受取済プレゼント,已领取的礼物
