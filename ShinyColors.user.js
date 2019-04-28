@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.6
+// @version      0.0.7
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.6";
+  var version = "0.0.7";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1348,17 +1348,48 @@
     };
   }
 
+  const imageMap = new Map();
+  let loaded$2 = false;
+
+  const getImage = async () => {
+    if (!loaded$2) {
+      let csv = await getLocalData('image');
+
+      if (!csv) {
+        csv = await fetchWithHash('/data/image.csv');
+        setLocalData('image', csv);
+      }
+
+      const list = parseCsv(csv);
+      list.forEach(item => {
+        if (item && item.name) {
+          const name = trim(item.name);
+          const url = trim(item.url);
+
+          if (name && url) {
+            imageMap.set(name, url);
+          }
+        }
+      });
+      loaded$2 = true;
+    }
+
+    return imageMap;
+  };
+
   async function resourceHook() {
+    const imageMap = await getImage();
     const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
     aoba.loaders.Resource.prototype._loadElement = function (type) {
       // if (type === 'image' && this.url.includes('8f5a4652a6d1d7a160fa5')) {
       //   log(this.url, this.name)
       // }
-      // if (this.name === 'images/ui/common/parts_buttons.json_image') {
-      //   this.url = 'https://biuuu.github.io/ShinyColors/data/123.png'
-      //   this.crossOrigin = true
-      // }
+      if (imageMap.has(this.name)) {
+        this.url = "".concat(config.origin, "/data/image/").concat(imageMap.get(this.name), "?V=").concat(config.hash);
+        this.crossOrigin = true;
+      }
+
       return originLoadElement.call(this, type);
     };
   }
