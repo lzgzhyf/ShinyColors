@@ -1206,7 +1206,7 @@
       // log('draw letter', ...args)
       const text = args[0];
 
-      if (isString_1(text) && text.startsWith('\u200b')) {
+      if (isString_1(text) && text.startsWith('\u200b\u200b')) {
         replaceFont(this.style);
       }
 
