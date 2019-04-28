@@ -788,7 +788,7 @@
     HEITI_JA: 'UDKakugo_SmallPr6-B',
     HEITI_TRANS: 'HYQiHei 70S',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'Tensentype QinYuanJ W5,HummingStd-E'
+    YUAN_TRANS: 'Tensentype QinYuanJ W5'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
@@ -1185,6 +1185,7 @@
       construct(target, args, newTarget) {
         const text = args[0];
         const option = args[1];
+        log('new text', ...args);
         args[0] = fontCheck(text, option, commMap);
         return Reflect.construct(target, args, newTarget);
       }
@@ -1195,6 +1196,7 @@
 
     aoba.Text.prototype.typeText = function (...args) {
       const text = args[0];
+      log('type text', ...args);
       args[0] = fontCheck(text, this.style, commMap);
       return originTypeText.apply(this, args);
     }; // watch drawLetterSpacing
@@ -1206,8 +1208,12 @@
       // log('draw letter', ...args)
       const text = args[0];
 
-      if (isString_1(text) && text.startsWith('\u200b\u200b')) {
-        replaceFont(this.style);
+      if (isString_1(text)) {
+        if (text.startsWith('\u200b\u200b')) {
+          replaceFont(this.style);
+        } else if (!text.startsWith('\u200b')) {
+          restoreFont(this.style);
+        }
       }
 
       return originDrawLetter.apply(this, args);
