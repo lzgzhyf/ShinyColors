@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.8
+// @version      0.0.9
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.8";
+  var version = "0.0.9";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1211,8 +1211,6 @@
       if (isString_1(text)) {
         if (text.startsWith('\u200b\u200b')) {
           replaceFont(this.style);
-        } else if (!text.startsWith('\u200b')) {
-          restoreFont(this.style);
         }
       }
 
