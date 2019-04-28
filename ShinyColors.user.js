@@ -1225,6 +1225,46 @@
     });
   }
 
+  const numRE = '(\\d{1,10}\\.?\\d{0,4}?)';
+  const percentRE = '(\\d{1,10}\\.?\\d{0,4}?[%％])';
+
+  const parseRegExp = (str, nounRE) => {
+    return str.replace(/\(/g, '\\(').replace(/\$num/g, numRE).replace(/\$percent/g, percentRE).replace(/\$noun/g, nounRE);
+  };
+
+  const autoTransCache = new Map();
+
+  const replaceText = (text, {
+    skillMap,
+    nounMap,
+    nounRE
+  }) => {
+    if (autoTransCache.has(text)) return autoTransCache.get(text);
+    let result = text;
+
+    for (let [key, trans] of skillMap) {
+      const re = new RegExp(parseRegExp(key, nounRE), 'gi');
+      result = result.replace(re, (...arr) => {
+        let _trans = trans;
+
+        for (let i = 1; i < arr.length - 2; i++) {
+          let eleKey = arr[i].toLowerCase();
+
+          if (nounMap.has(eleKey)) {
+            _trans = _trans.replace("$".concat(i), nounMap.get(eleKey));
+          } else {
+            _trans = _trans.replace("$".concat(i), arr[i]);
+          }
+        }
+
+        return _trans;
+      });
+    }
+
+    autoTransCache.set(text, result);
+    return result;
+  };
+
   const supportSkillMap = new Map();
   const nounMap = new Map();
   const nounArr = [];
@@ -1267,44 +1307,24 @@
     };
   };
 
-  const numRE = '(\\d{1,10}\\.?\\d{0,4}?)';
-  const percentRE = '(\\d{1,10}\\.?\\d{0,4}?[%％])';
-
-  const parseRegExp = (str, nounRE) => {
-    return str.replace(/\(/g, '\\(').replace(/\$num/g, numRE).replace(/\$percent/g, percentRE).replace(/\$noun/g, nounRE);
+  const transSkill = async res => {
+    const supportSkillData = await getSupportSkill();
+    const sskill = res.body.supportSkills;
+    const asskill = res.body.acquiredSupportSkills;
+    sskill.forEach(item => {
+      item.description = tagText(replaceText(item.description, supportSkillData));
+    });
+    asskill && asskill.forEach(item => {
+      item.description = tagText(replaceText(item.description, supportSkillData));
+    });
   };
 
-  const autoTransCache = new Map();
-
-  const replaceSkill = (text, {
-    skillMap,
-    nounMap,
-    nounRE
-  }) => {
-    if (autoTransCache.has(text)) return autoTransCache.get(text);
-    let result = text;
-
-    for (let [key, trans] of skillMap) {
-      const re = new RegExp(parseRegExp(key, nounRE), 'gi');
-      result = result.replace(re, (...arr) => {
-        let _trans = trans;
-
-        for (let i = 1; i < arr.length - 2; i++) {
-          let eleKey = arr[i].toLowerCase();
-
-          if (nounMap.has(eleKey)) {
-            _trans = _trans.replace("$".concat(i), nounMap.get(eleKey));
-          } else {
-            _trans = _trans.replace("$".concat(i), arr[i]);
-          }
-        }
-
-        return _trans;
-      });
-    }
-
-    autoTransCache.set(text, result);
-    return result;
+  const transMission = async res => {// saveMission(res.body.dailyUserMissions)
+    // saveMission(res.body.weeklyUserMissions)
+    // saveMission(res.body.eventUserMissions[0].userMissions)
+    // saveMission(res.body.normalUserMissions)
+    // saveMission(res.body.specialUserMissions)
+    // log(list.join(',\n'))
   };
 
   const getRequest = () => {
@@ -1323,7 +1343,6 @@
   async function requestHook() {
     const request = getRequest();
     if (!request.get) return;
-    const supportSkillData = await getSupportSkill();
     const originGet = request.get;
 
     request.get = async function (...args) {
@@ -1334,14 +1353,9 @@
       log(res.body);
 
       if (/^userSupportIdols\/\d+$/.test(type) || type === 'userSupportIdols/statusMax') {
-        const sskill = res.body.supportSkills;
-        const asskill = res.body.acquiredSupportSkills;
-        sskill.forEach(item => {
-          item.description = tagText(replaceSkill(item.description, supportSkillData));
-        });
-        asskill && asskill.forEach(item => {
-          item.description = tagText(replaceSkill(item.description, supportSkillData));
-        });
+        await transSkill(res);
+      } else if (type === 'userMissions') {
+        await transMission(res);
       }
 
       return res;
@@ -1382,10 +1396,10 @@
     const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
     aoba.loaders.Resource.prototype._loadElement = function (type) {
-      // if (type === 'image' && this.url.includes('8f5a4652a6d1d7a160fa5')) {
+      // if (type === 'image' && this.url.includes('697481939646e7371fd37596e0055b26')) {
       //   log(this.url, this.name)
       // }
-      if (imageMap.has(this.name)) {
+      if (type === 'image' && imageMap.has(this.name)) {
         this.url = "".concat(config.origin, "/data/image/").concat(imageMap.get(this.name), "?V=").concat(config.hash);
         this.crossOrigin = true;
       }
