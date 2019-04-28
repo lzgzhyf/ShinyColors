@@ -786,9 +786,9 @@
   };
   const FONT = {
     HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'HYQiHeiX1 75W',
+    HEITI_TRANS: 'HYQiHei 70S',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'Tensentype QinYuanJ W5'
+    YUAN_TRANS: 'Tensentype QinYuanJ W5,HummingStd-E'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
