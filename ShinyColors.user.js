@@ -1324,11 +1324,11 @@
 
   const getMission = async () => {
     if (!loaded$2) {
-      let csv = await getLocalData('image');
+      let csv = await getLocalData('mission');
 
       if (!csv) {
-        csv = await fetchWithHash('/data/image.csv');
-        setLocalData('image', csv);
+        csv = await fetchWithHash('/data/mission.csv');
+        setLocalData('mission', csv);
       }
 
       const list = parseCsv(csv);
@@ -1351,19 +1351,19 @@
   let missionMap$1 = null;
 
   const replaceText$1 = (data, key) => {
-    if (missionMap$1.has(data[key])) {
+    if (data[key] && missionMap$1.has(data[key])) {
       data[key] = tagText(map.get(data[key]));
     }
   };
 
   const processMission = list => {
     list.forEach(item => {
-      replaceText$1(item.mission.title);
-      replaceText$1(item.mission.comment);
+      replaceText$1(item.mission, 'title');
+      replaceText$1(item.mission, 'comment');
 
       if (item.mission.missionReward.content) {
-        replaceText$1(item.mission.missionReward.content.name);
-        replaceText$1(item.mission.missionReward.content.comment);
+        replaceText$1(item.mission.missionReward.content, 'name');
+        replaceText$1(item.mission.missionReward.content, 'comment');
       }
     });
   };
