@@ -1319,12 +1319,66 @@
     });
   };
 
-  const transMission = async res => {// saveMission(res.body.dailyUserMissions)
-    // saveMission(res.body.weeklyUserMissions)
-    // saveMission(res.body.eventUserMissions[0].userMissions)
-    // saveMission(res.body.normalUserMissions)
-    // saveMission(res.body.specialUserMissions)
-    // log(list.join(',\n'))
+  const missionMap = new Map();
+  let loaded$2 = false;
+
+  const getMission = async () => {
+    if (!loaded$2) {
+      let csv = await getLocalData('image');
+
+      if (!csv) {
+        csv = await fetchWithHash('/data/image.csv');
+        setLocalData('image', csv);
+      }
+
+      const list = parseCsv(csv);
+      list.forEach(item => {
+        if (item && item.ja) {
+          const ja = trim(item.ja);
+          const zh = trim(item.zh);
+
+          if (ja && zh) {
+            missionMap.set(ja, zh);
+          }
+        }
+      });
+      loaded$2 = true;
+    }
+
+    return missionMap;
+  };
+
+  let missionMap$1 = null;
+
+  const replaceText$1 = (data, key) => {
+    if (missionMap$1.has(data[key])) {
+      data[key] = tagText(map.get(data[key]));
+    }
+  };
+
+  const processMission = list => {
+    list.forEach(item => {
+      replaceText$1(item.mission.title);
+      replaceText$1(item.mission.comment);
+
+      if (item.mission.missionReward.content) {
+        replaceText$1(item.mission.missionReward.content.name);
+        replaceText$1(item.mission.missionReward.content.comment);
+      }
+    });
+  };
+
+  const transMission = async res => {
+    missionMap$1 = await getMission();
+    processMission(res.body.dailyUserMissions);
+    processMission(res.body.weeklyUserMissions);
+    res.body.eventUserMissions.forEach(item => {
+      if (item && item.userMissions) {
+        processMission(item.userMissions);
+      }
+    });
+    processMission(res.body.normalUserMissions);
+    processMission(res.body.specialUserMissions);
   };
 
   const getRequest = () => {
@@ -1363,10 +1417,10 @@
   }
 
   const imageMap = new Map();
-  let loaded$2 = false;
+  let loaded$3 = false;
 
   const getImage = async () => {
-    if (!loaded$2) {
+    if (!loaded$3) {
       let csv = await getLocalData('image');
 
       if (!csv) {
@@ -1385,7 +1439,7 @@
           }
         }
       });
-      loaded$2 = true;
+      loaded$3 = true;
     }
 
     return imageMap;
