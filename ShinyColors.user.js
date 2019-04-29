@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.10
+// @version      0.0.11
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.10";
+  var version = "0.0.11";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -786,9 +786,9 @@
   };
   const FONT = {
     HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'HYQH70SUP',
+    HEITI_TRANS: 'HYQH70SUP,UDKakugo_SmallPr6-B',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'QYW5UP'
+    YUAN_TRANS: 'QYW5UP,HummingStd-E'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
@@ -1187,20 +1187,7 @@
         const option = args[1];
         log('new text', ...args);
         args[0] = fontCheck(text, option, commMap);
-        return Reflect.construct(target, args, newTarget); // return new Proxy(result, {
-        //   set (_target, _name, _value) {
-        //     if (_name === 'text') {
-        //       if (isString(_value) && _value.trim()) {
-        //         log('set text', _value, _value.startsWith('\u200b'))
-        //         if (_value.startsWith('\u200b')) {
-        //           replaceFont(_target.style)
-        //           _target._font = _target._style.toFontString()
-        //         }
-        //       }
-        //     }
-        //     return Reflect.set(_target, _name, _value)
-        //   }
-        // })
+        return Reflect.construct(target, args, newTarget);
       }
 
     }); // watch typeText
@@ -1232,7 +1219,7 @@
 
     aoba.Text.prototype.updateText = function (t) {
       if (this.localStyleID !== this._style.styleID && (this.dirty = !0, e.styleID), this.dirty || !t) {
-        log('update text', this._text);
+        // log('update text', this._text)
         const value = fontCheck(this._text, this._style, commMap);
         Reflect.set(this, '_text', value);
         return originUpdateText.call(this, t);
