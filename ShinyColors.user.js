@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.9
+// @version      0.0.10
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -457,7 +457,7 @@
 
   const trim = str => {
     if (!str) return '';
-    return str.trim();
+    return str.trimEnd();
   };
 
   if (ENVIRONMENT === 'development') {
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.9";
+  var version = "0.0.10";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -786,16 +786,16 @@
   };
   const FONT = {
     HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'HYQiHei 70S',
+    HEITI_TRANS: 'HYQH70SUP',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'Tensentype QinYuanJ W5'
+    YUAN_TRANS: 'QYW5UP'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
     hash: '',
     localHash: '',
     version: version,
-    timeout: 20
+    timeout: 30
   };
 
   const getLocalConfig = () => {
