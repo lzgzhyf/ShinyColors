@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.12
+// @version      0.0.13
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.12";
+  var version = "0.0.13";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1400,7 +1400,7 @@
 
   async function requestHook() {
     const request = getRequest();
-    if (!request.get) return;
+    if (!request || !request.get) return;
     const originGet = request.get;
 
     request.get = async function (...args) {
@@ -1464,6 +1464,7 @@
   };
 
   async function resourceHook() {
+    if (!GLOBAL.aoba) return;
     const imageMap = await getImage();
     const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
@@ -1488,6 +1489,8 @@
     }
   };
 
-  window.addEventListener('load', main);
+  setTimeout(() => {
+    window.addEventListener('load', main);
+  });
 
 }());
