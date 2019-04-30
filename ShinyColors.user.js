@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.11
+// @version      0.0.12
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.11";
+  var version = "0.0.12";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1184,8 +1184,8 @@
     const Text = new Proxy(aoba.Text, {
       construct(target, args, newTarget) {
         const text = args[0];
-        const option = args[1];
-        log('new text', ...args);
+        const option = args[1]; // log('new text', ...args)
+
         args[0] = fontCheck(text, option, commMap);
         return Reflect.construct(target, args, newTarget);
       }
@@ -1199,21 +1199,7 @@
       log('type text', ...args);
       args[0] = fontCheck(text, this.style, commMap);
       return originTypeText.apply(this, args);
-    }; // watch drawLetterSpacing
-    // const originDrawLetter = aoba.Text.prototype.drawLetterSpacing
-    // aoba.Text.prototype.drawLetterSpacing = function (...args) {
-    //   log('draw letter', ...args)
-    //   const text = args[0]
-    //   if (isString(text) && text.trim()) {
-    //     if (text.startsWith('\u200b\u200b')) {
-    //       replaceFont(this.style)
-    //     } else if (!text.startsWith('\u200b')) {
-    //       restoreFont(this.style)
-    //     }
-    //   }
-    //   return originDrawLetter.apply(this, args)
-    // }
-
+    };
 
     const originUpdateText = aoba.Text.prototype.updateText;
 
@@ -1320,10 +1306,10 @@
     };
   };
 
-  const transSkill = async res => {
+  const transSkill = async data => {
     const supportSkillData = await getSupportSkill();
-    const sskill = res.body.supportSkills;
-    const asskill = res.body.acquiredSupportSkills;
+    const sskill = data.supportSkills;
+    const asskill = data.acquiredSupportSkills;
     sskill.forEach(item => {
       item.description = tagText(replaceText(item.description, supportSkillData));
     });
@@ -1335,7 +1321,7 @@
   const missionMap = new Map();
   let loaded$2 = false;
 
-  const getMission = async () => {
+  const getMission = async (full = false) => {
     if (!loaded$2) {
       let csv = await getLocalData('mission');
 
@@ -1350,7 +1336,7 @@
           const ja = trim(item.ja);
           const zh = trim(item.zh);
 
-          if (ja && zh) {
+          if (ja && (zh || full)) {
             missionMap.set(ja, zh);
           }
         }
@@ -1382,6 +1368,11 @@
   };
 
   const transMission = async res => {
+    // if (ENVIRONMENT === 'development') {
+    //   missionMap = await getMission(true)
+    //   collectMissions(res)
+    //   log(unknownMissions.join(',\n'))
+    // }
     missionMap$1 = await getMission();
     processMission(res.body.dailyUserMissions);
     processMission(res.body.weeklyUserMissions);
@@ -1413,16 +1404,30 @@
     const originGet = request.get;
 
     request.get = async function (...args) {
-      log(...args);
       const type = args[0];
       const res = await originGet.apply(this, args);
       if (!type) return res;
-      log(res.body);
+      log('get', ...args, res.body);
 
       if (/^userSupportIdols\/\d+$/.test(type) || type === 'userSupportIdols/statusMax') {
-        await transSkill(res);
+        await transSkill(res.body);
       } else if (type === 'userMissions') {
         await transMission(res);
+      }
+
+      return res;
+    };
+
+    const originPatch = request.patch;
+
+    request.patch = async function (...args) {
+      const type = args[0];
+      const res = await originPatch.apply(this, args);
+      if (!type) return res;
+      log('patch', ...args, res.body);
+
+      if (/^userSupportIdols\/\d+$/.test(type)) {
+        await transSkill(res.body.userSupportIdol);
       }
 
       return res;
