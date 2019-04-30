@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.13
+// @version      0.0.14
 // @description  none
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
@@ -778,7 +778,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.13";
+  var version = "0.0.14";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1204,7 +1204,7 @@
     const originUpdateText = aoba.Text.prototype.updateText;
 
     aoba.Text.prototype.updateText = function (t) {
-      if (this.localStyleID !== this._style.styleID && (this.dirty = !0, e.styleID), this.dirty || !t) {
+      if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
         // log('update text', this._text)
         const value = fontCheck(this._text, this._style, commMap);
         Reflect.set(this, '_text', value);
