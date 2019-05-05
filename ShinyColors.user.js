@@ -2,7 +2,8 @@
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
 // @version      0.0.14
-// @description  none
+// @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
+// @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
 // @run-at       document-end
@@ -1051,7 +1052,7 @@
   const phraseMap = new Map();
   let loaded = false;
 
-  const getPhrase = async () => {
+  const getPhrase = async (full = false) => {
     if (!loaded) {
       let csv = await getLocalData('phrase');
 
@@ -1065,10 +1066,9 @@
         if (item && item.name) {
           const _name = trim(item.name);
 
-          const _zh = trim(item.zh); // const _ja = trim(item.ja)
+          const _zh = trim(item.zh);
 
-
-          if (_name && _zh) {
+          if (_name && (_zh || full)) {
             phraseMap.set(_name, _zh);
           }
         }
@@ -1083,6 +1083,8 @@
     return "\u200B\u200B".concat(text);
   };
 
+  let phraseMap$1 = null;
+
   const getPhraseObj = () => {
     let phrases;
 
@@ -1090,18 +1092,22 @@
       const modulePhrases = primJsp([], [], [MODULE_ID.PHRASE]);
       phrases = modulePhrases.default._polyglot.phrases;
     } catch (e) {
-      console.log(e);
+      log(e);
     }
 
     return phrases;
   };
 
   async function transPhrase() {
-    const phraseMap = await getPhrase();
     const obj = getPhraseObj();
-    if (!obj) return;
+    if (!obj) return; // if (ENVIRONMENT === 'development') {
+    //   phraseMap = await getPhrase(true)
+    //   collectPhrases(obj)
+    // }
 
-    for (let [key, value] of phraseMap) {
+    phraseMap$1 = await getPhrase();
+
+    for (let [key, value] of phraseMap$1) {
       let _value = value.replace(/\\[rn]/g, '\n');
 
       obj[key] = tagText(_value);
