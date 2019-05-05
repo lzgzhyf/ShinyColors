@@ -1190,8 +1190,8 @@
     const Text = new Proxy(aoba.Text, {
       construct(target, args, newTarget) {
         const text = args[0];
-        const option = args[1]; // log('new text', ...args)
-
+        const option = args[1];
+        log('new text', ...args);
         args[0] = fontCheck(text, option, commMap);
         return Reflect.construct(target, args, newTarget);
       }
@@ -1211,7 +1211,7 @@
 
     aoba.Text.prototype.updateText = function (t) {
       if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
-        // log('update text', this._text)
+        log('update text', this._text);
         const value = fontCheck(this._text, this._style, commMap);
         Reflect.set(this, '_text', value);
         return originUpdateText.call(this, t);
