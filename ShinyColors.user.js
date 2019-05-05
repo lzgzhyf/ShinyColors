@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.14
+// @version      0.0.15
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -461,6 +461,10 @@
     return str.trimEnd();
   };
 
+  const trimWrap = str => {
+    return trim(str).replace(/\\n/, '\n');
+  };
+
   if (ENVIRONMENT === 'development') {
     GLOBAL && (GLOBAL.console = restoreConsole());
   }
@@ -779,7 +783,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.14";
+  var version = "0.0.15";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1066,7 +1070,7 @@
         if (item && item.name) {
           const _name = trim(item.name);
 
-          const _zh = trim(item.zh);
+          const _zh = trimWrap(item.zh);
 
           if (_name && (_zh || full)) {
             phraseMap.set(_name, _zh);
@@ -1108,9 +1112,7 @@
     phraseMap$1 = await getPhrase();
 
     for (let [key, value] of phraseMap$1) {
-      let _value = value.replace(/\\[rn]/g, '\n');
-
-      obj[key] = tagText(_value);
+      obj[key] = tagText(value);
     }
   }
 
@@ -1129,9 +1131,9 @@
       const list = parseCsv(csv);
       list.forEach(item => {
         if (item && item.ja) {
-          const _ja = trim(item.ja);
+          const _ja = trimWrap(item.ja);
 
-          const _zh = trim(item.zh);
+          const _zh = trimWrap(item.zh);
 
           if (_ja && _zh) {
             commonMap.set(_ja, _zh);
@@ -1211,7 +1213,7 @@
 
     aoba.Text.prototype.updateText = function (t) {
       if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
-        log('update text', this._text);
+        // log('update text', this._text)
         const value = fontCheck(this._text, this._style, commMap);
         Reflect.set(this, '_text', value);
         return originUpdateText.call(this, t);
@@ -1339,8 +1341,8 @@
       const list = parseCsv(csv);
       list.forEach(item => {
         if (item && item.ja) {
-          const ja = trim(item.ja);
-          const zh = trim(item.zh);
+          const ja = trimWrap(item.ja);
+          const zh = trimWrap(item.zh);
 
           if (ja && (zh || full)) {
             missionMap.set(ja, zh);
