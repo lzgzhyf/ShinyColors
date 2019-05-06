@@ -13,7 +13,7 @@
 (function () {
   'use strict';
 
-  const ENVIRONMENT = "";
+  const ENVIRONMENT = "";const DEV = false;
 
   // Copyright Joyent, Inc. and other Node contributors.
 
@@ -824,6 +824,10 @@
         config[key] = value;
       }
     });
+
+    if (DEV) {
+      config.origin = 'http://localhost:15944';
+    }
   };
 
   const getLocalHash = () => {
@@ -1016,6 +1020,7 @@
   let data = null;
 
   const getLocalData = async type => {
+    if (DEV) return false;
     if (data) return data[type];
     const hash = await getHash;
 
@@ -1040,6 +1045,7 @@
   };
 
   const setLocalData = (type, value) => {
+    if (DEV) return false;
     if (!data) data = {
       hash: config.hash
     };
@@ -1213,7 +1219,7 @@
 
     aoba.Text.prototype.updateText = function (t) {
       if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
-        // log('update text', this._text)
+        if (DEV) log('update text', this._text);
         const value = fontCheck(this._text, this._style, commMap);
         Reflect.set(this, '_text', value);
         return originUpdateText.call(this, t);
