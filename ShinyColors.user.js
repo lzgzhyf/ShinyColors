@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.0.16
+// @version      0.0.17
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -462,7 +462,7 @@
   };
 
   const trimWrap = str => {
-    return trim(str).replace(/\\n/g, '\n');
+    return trim(str).replace(/\\r/g, '\r').replace(/\\n/g, '\n');
   };
 
   if (ENVIRONMENT === 'development') {
@@ -783,7 +783,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.0.16";
+  var version = "0.0.17";
 
   const MODULE_ID = {
     REQUEST: 2,
