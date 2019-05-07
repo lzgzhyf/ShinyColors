@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.1.0
+// @version      0.2.0
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -785,7 +785,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.1.0";
+  var version = "0.2.0";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -793,9 +793,9 @@
   };
   const FONT = {
     HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'HYQH70SUP,UDKakugo_SmallPr6-B',
+    HEITI_TRANS: 'sczh-heiti,UDKakugo_SmallPr6-B',
     YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'QYW5UP,HummingStd-E'
+    YUAN_TRANS: 'sczh-yuanti,HummingStd-E'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
@@ -1414,8 +1414,16 @@
     };
   }
 
+  const addFont = async () => {
+    const tag = document.createElement('style');
+    const hash = await getHash;
+    tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  \n  ");
+    document.head.appendChild(tag);
+  };
+
   const main = async () => {
     try {
+      addFont();
       await Promise.all([transPhrase(), watchText(), requestHook(), resourceHook()]);
     } catch (e) {
       log(e);
