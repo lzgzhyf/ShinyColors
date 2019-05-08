@@ -1414,10 +1414,22 @@
     };
   }
 
+  const preload = src => {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'preload');
+    link.setAttribute('href', src);
+    link.setAttribute('as', 'font');
+    link.setAttribute('type', 'font/woff2');
+    link.setAttribute('crossorigin', 'anonymous');
+    document.head.appendChild(link);
+  };
+
   const addFont = async () => {
     const tag = document.createElement('style');
     const hash = await getHash;
-    tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  \n  ");
+    tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  ");
+    preload("".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash));
+    preload("".concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash));
     document.head.appendChild(tag);
   };
 
