@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.2.1
+// @version      0.2.2
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -785,7 +785,7 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.2.1";
+  var version = "0.2.2";
 
   const MODULE_ID = {
     REQUEST: 2,
@@ -1114,6 +1114,39 @@
     return commonMap;
   };
 
+  const typeTextMap = new Map();
+  let loaded$2 = false;
+
+  const getTypeTextMap = async () => {
+    if (!loaded$2) {
+      let csv = await getLocalData('type-text');
+
+      if (!csv) {
+        csv = await fetchWithHash('/data/type-text.csv');
+        setLocalData('type-text', csv);
+      }
+
+      const list = parseCsv(csv);
+      list.forEach(item => {
+        if (item && item.ja) {
+          const _ja = trimWrap(item.ja);
+
+          const _zh = trimWrap(item.zh);
+
+          if (_ja && _zh) {
+            typeTextMap.set(_ja, _zh);
+          }
+        }
+      });
+      loaded$2 = true;
+    }
+
+    return typeTextMap;
+  };
+
+  let commMap = new Map();
+  let typeTextMap$1 = new Map();
+
   const replaceFont = style => {
     if (style && style.fontFamily) {
       if (style.fontFamily === FONT.HEITI_JA) {
@@ -1134,7 +1167,20 @@
     }
   };
 
-  const fontCheck = (text, style, textMap) => {
+  const textInMap = (text, map, style) => {
+    let _text = text;
+
+    if (map.has(text)) {
+      _text = '\u200b' + map.get(text);
+      replaceFont(style);
+    } else if (!text.startsWith('\u200b')) {
+      restoreFont(style);
+    }
+
+    return _text;
+  };
+
+  const fontCheck = (text, style, isType = false) => {
     if (!isString_1(text)) return text;
     let _text = text;
 
@@ -1143,11 +1189,10 @@
       _text = text.slice(1);
       replaceFont(style);
     } else if (text.trim()) {
-      if (textMap.has(text)) {
-        _text = '\u200b' + textMap.get(text);
-        replaceFont(style);
-      } else if (!text.startsWith('\u200b')) {
-        restoreFont(style);
+      if (isType) {
+        _text = textInMap(text, typeTextMap$1, style);
+      } else {
+        _text = textInMap(text, commMap, style);
       }
     }
 
@@ -1156,13 +1201,14 @@
 
   async function watchText() {
     if (!GLOBAL.aoba) return;
-    const commMap = await getCommMap();
+    commMap = await getCommMap();
+    typeTextMap$1 = await getTypeTextMap();
     const Text = new Proxy(aoba.Text, {
       construct(target, args, newTarget) {
         const text = args[0];
         const option = args[1];
         log('new text', ...args);
-        args[0] = fontCheck(text, option, commMap);
+        args[0] = fontCheck(text, option);
         return Reflect.construct(target, args, newTarget);
       }
 
@@ -1173,7 +1219,7 @@
     aoba.Text.prototype.typeText = function (...args) {
       const text = args[0];
       log('type text', ...args);
-      args[0] = fontCheck(text, this.style, commMap);
+      args[0] = fontCheck(text, this.style, true);
       return originTypeText.apply(this, args);
     };
 
@@ -1182,7 +1228,7 @@
     aoba.Text.prototype.updateText = function (t) {
       if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
         if (DEV) log('update text', this._text);
-        const value = fontCheck(this._text, this._style, commMap);
+        const value = fontCheck(this._text, this._style);
         Reflect.set(this, '_text', value);
         return originUpdateText.call(this, t);
       }
@@ -1295,10 +1341,10 @@
   };
 
   const missionMap = new Map();
-  let loaded$2 = false;
+  let loaded$3 = false;
 
   const getMission = async (full = false) => {
-    if (!loaded$2) {
+    if (!loaded$3) {
       let csv = await getLocalData('mission');
 
       if (!csv) {
@@ -1317,7 +1363,7 @@
           }
         }
       });
-      loaded$2 = true;
+      loaded$3 = true;
     }
 
     return missionMap;
@@ -1411,10 +1457,10 @@
   }
 
   const imageMap = new Map();
-  let loaded$3 = false;
+  let loaded$4 = false;
 
   const getImage = async () => {
-    if (!loaded$3) {
+    if (!loaded$4) {
       let csv = await getLocalData('image');
 
       if (!csv) {
@@ -1433,7 +1479,7 @@
           }
         }
       });
-      loaded$3 = true;
+      loaded$4 = true;
     }
 
     return imageMap;
