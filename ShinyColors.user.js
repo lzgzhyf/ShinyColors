@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.2.0
+// @version      0.2.1
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -785,24 +785,34 @@
 
   var isPlainObject_1 = isPlainObject;
 
-  var version = "0.2.0";
+  var version = "0.2.1";
 
   const MODULE_ID = {
     REQUEST: 2,
     PHRASE: 4
-  };
-  const FONT = {
-    HEITI_JA: 'UDKakugo_SmallPr6-B',
-    HEITI_TRANS: 'sczh-heiti,UDKakugo_SmallPr6-B',
-    YUAN_JA: 'HummingStd-E',
-    YUAN_TRANS: 'sczh-yuanti,HummingStd-E'
   };
   const config = {
     origin: 'https://biuuu.github.io/ShinyColors',
     hash: '',
     localHash: '',
     version: version,
-    timeout: 30
+    timeout: 30,
+    font1: 'yuanti',
+    font2: 'heiti'
+  };
+  const defaultConfig = Object.assign({}, config);
+  const fontList = ['yuanti', 'heiti', 'yuanti2'];
+  const FONT = {
+    HEITI_JA: 'UDKakugo_SmallPr6-B',
+    HEITI_TRANS: "sczh-heiti,UDKakugo_SmallPr6-B",
+    YUAN_JA: 'HummingStd-E',
+    YUAN_TRANS: "sczh-yuanti,HummingStd-E"
+  };
+  const keys = DEV ? ['font1', 'font2', 'timeout'] : ['origin', 'font1', 'font2', 'timeout'];
+
+  const setFont = () => {
+    FONT.HEITI_TRANS = "".concat(fontList.includes(config.font2) ? 'sczh-' : '').concat(config.font2, ",").concat(FONT.HEITI_JA);
+    FONT.YUAN_TRANS = "".concat(fontList.includes(config.font1) ? 'sczh-' : '').concat(config.font1, ",").concat(FONT.YUAN_JA);
   };
 
   const getLocalConfig = () => {
@@ -817,7 +827,6 @@
       config.origin = origin.trim();
     }
 
-    const keys = ['timeout'];
     keys.forEach(key => {
       let value = setting[key];
       if (isString_1(value)) value = value.trim();
@@ -826,10 +835,42 @@
         config[key] = value;
       }
     });
+    setFont();
 
     if (DEV) {
       config.origin = 'http://localhost:15944';
     }
+  };
+
+  const saveConfig = () => {
+    const data = {};
+    keys.forEach(key => {
+      data[key] = config[key];
+    });
+    setFont();
+    localStorage.setItem('sczh:setting', JSON.stringify(data));
+  };
+
+  const getConfigFromHash = () => {
+    let str = location.hash;
+    str = str.slice(1);
+    let arr = str.split(';');
+    arr.forEach(_str => {
+      let _arr = _str.split('=');
+
+      let k = decodeURIComponent(_arr[0].trim());
+      let v = _arr[1] ? decodeURIComponent(_arr[1].trim()) : '';
+
+      if (k && keys.includes(k)) {
+        if (v) {
+          config[k] = v;
+        } else {
+          config[k] = defaultConfig[k];
+        }
+
+        saveConfig();
+      }
+    });
   };
 
   const getLocalHash = () => {
@@ -843,6 +884,8 @@
 
   getLocalConfig();
   getLocalHash();
+  getConfigFromHash();
+  window.addEventListener('hashchange', getConfigFromHash);
 
   const {
     origin
@@ -1427,9 +1470,18 @@
   const addFont = async () => {
     const tag = document.createElement('style');
     const hash = await getHash;
-    tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  ");
-    preload("".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash));
-    preload("".concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash));
+    tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti2\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti2.woff2?v=").concat(hash, "\");\n  }\n  ");
+
+    if (config.font1 === 'yuanti') {
+      preload("".concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash));
+    } else if (config.font1 === 'yuanti2') {
+      preload("".concat(config.origin, "/data/font/yuanti2.woff2?v=").concat(hash));
+    }
+
+    if (config.font2 === 'heiti') {
+      preload("".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash));
+    }
+
     document.head.appendChild(tag);
   };
 
