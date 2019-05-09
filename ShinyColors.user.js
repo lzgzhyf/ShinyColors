@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.3.0
+// @version      0.3.1
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -386,7 +386,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.3.0";
+	var version = "0.3.1";
 
 	const MODULE_ID = {
 	  REQUEST: 2,
@@ -457,7 +457,7 @@
 
 	const getConfigFromHash = () => {
 	  let str = location.hash;
-	  str = str.slice(1);
+	  str = str.slice(1).replace(/\?tdsourcetag=s_pc(tim|qq)_aiomsg/, '');
 	  let arr = str.split(';');
 	  arr.forEach(_str => {
 	    let _arr = _str.split('=');
