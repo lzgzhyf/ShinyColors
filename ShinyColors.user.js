@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.3.1
+// @version      0.3.2
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -386,7 +386,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.3.1";
+	var version = "0.3.2";
 
 	const MODULE_ID = {
 	  REQUEST: 2,
@@ -3430,6 +3430,12 @@
 	  list.push({
 	    id: 'info',
 	    name,
+	    text: '',
+	    trans: ''
+	  });
+	  list.push({
+	    id: '译者',
+	    name: '',
 	    text: '',
 	    trans: ''
 	  });
