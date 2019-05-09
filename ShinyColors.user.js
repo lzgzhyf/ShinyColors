@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.3.2
+// @version      0.3.3
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -386,7 +386,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.3.2";
+	var version = "0.3.3";
 
 	const MODULE_ID = {
 	  REQUEST: 2,
@@ -3487,12 +3487,12 @@
 	  const originLoad = scnModule.load;
 
 	  scnModule.load = async function (...args) {
-	    const res = await originLoad.apply(this, args); // log('scenario', ...args, res)
-
+	    const res = await originLoad.apply(this, args);
+	    log('scenario', ...args, res);
 	    const type = args[0];
 	    if (!type) return res;
 
-	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/')) {
+	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/')) {
 	      try {
 	        const name = type.replace(/^\/assets\/json\//, '');
 
