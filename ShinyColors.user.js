@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.1
+// @version      0.4.2
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -292,6 +292,10 @@
 	  return _str;
 	};
 
+	const replaceQuote = str => {
+	  return str.replace(/"([^"]*)"/g, '“$1”').replace(/'([^']*)'/g, '‘$1’');
+	};
+
 	/** `Object#toString` result references. */
 	var boolTag = '[object Boolean]';
 
@@ -399,7 +403,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.1";
+	var version = "0.4.2";
 
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
@@ -3587,11 +3591,21 @@
 
 	  log(fixedTransList.join('\n'));
 	  fixedTransList.forEach((trans, idx) => {
+	    let _trans = trans;
 	    const {
 	      key,
 	      index
 	    } = textInfo[idx];
-	    data[index][key] = tagText(trans);
+
+	    if (key === 'select') {
+	      if (trans.length > 8 && !trans.includes('\n')) {
+	        const len = Math.floor(trans.length / 2) + 1;
+	        _trans = trans.slice(0, len) + '\n' + trans.slice(len, trans.length);
+	      }
+	    }
+
+	    _trans = replaceQuote(_trans);
+	    data[index][key] = tagText(_trans);
 	  });
 	  data.forEach(item => {
 	    if (item.speaker) {
