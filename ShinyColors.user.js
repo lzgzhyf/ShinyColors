@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.2
+// @version      0.4.3
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -403,7 +403,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.2";
+	var version = "0.4.3";
 
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
@@ -850,7 +850,7 @@
 
 	  aoba.Text.prototype.updateText = function (t) {
 	    if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
-	      //if (DEV) log('update text', this._text)
+	      if (DEV) log('update text', this._text);
 	      const value = fontCheck(this._text, this._style);
 	      Reflect.set(this, '_text', value);
 	      return originUpdateText.call(this, t);
@@ -1017,6 +1017,7 @@
 	  //   missionMap = await getMission(true)
 	  //   collectMissions(res)
 	  //   log(unknownMissions.join(',\n'))
+	  //   return
 	  // }
 	  missionMap$1 = await getMission();
 	  processMission(res.body.dailyUserMissions);
@@ -3278,7 +3279,7 @@
 	}));
 	});
 
-	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 45%;\n    height: 25%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -20%;\n    top: -21%;\n    border-radius: 20%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
+	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 65%;\n    height: 35%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -28%;\n    top: -27%;\n    border-radius: 10%;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
 	let showToolFlag = false;
 
 	const showStoryTool = storyCache => {
@@ -3726,14 +3727,12 @@
 	  const originLoad = scnModule.load;
 
 	  scnModule.load = async function (...args) {
-	    const res = await originLoad.apply(this, args); // log('scenario', ...args, res)
-
+	    const res = await originLoad.apply(this, args);
+	    if (DEV) log('scenario', ...args, res);
 	    const type = args[0];
 	    if (!type) return res;
 
-	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/')) {
-	      log('scenario', ...args, res);
-
+	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/') || type.includes('/produce_communication_televisions/')) {
 	      try {
 	        const name = type.replace(/^\/assets\/json\//, '');
 
