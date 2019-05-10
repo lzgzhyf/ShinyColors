@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.0
+// @version      0.4.1
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -399,7 +399,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.0";
+	var version = "0.4.1";
 
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
@@ -3585,13 +3585,13 @@
 	    autoTransCache$1.set(name, fixedTransList);
 	  }
 
-	  log(fixedTransList);
+	  log(fixedTransList.join('\n'));
 	  fixedTransList.forEach((trans, idx) => {
 	    const {
 	      key,
 	      index
 	    } = textInfo[idx];
-	    data[index][key] = trans;
+	    data[index][key] = tagText(trans);
 	  });
 	  data.forEach(item => {
 	    if (item.speaker) {
