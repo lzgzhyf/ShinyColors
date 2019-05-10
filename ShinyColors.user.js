@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.3.3
+// @version      0.4.0
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -279,6 +279,19 @@
 	  return text;
 	};
 
+	const replaceWords = (str, map) => {
+	  if (!str) return str;
+	  let _str = str;
+
+	  for (let [key, val] of map) {
+	    if (!key || key.length < 2) continue;
+	    const expr = key.replace(/\?/g, '\\?').replace(/\./g, '\\.').replace(/\*/g, '\\*').replace(/\+/g, '\\+');
+	    _str = _str.replace(new RegExp(expr, 'g'), val);
+	  }
+
+	  return _str;
+	};
+
 	/** `Object#toString` result references. */
 	var boolTag = '[object Boolean]';
 
@@ -386,13 +399,8 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.3.3";
+	var version = "0.4.0";
 
-	const MODULE_ID = {
-	  REQUEST: 2,
-	  PHRASE: 4,
-	  SCENARIO: 119
-	};
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
 	  hash: '',
@@ -401,7 +409,8 @@
 	  story: 'normal',
 	  timeout: 30,
 	  font1: 'yuanti',
-	  font2: 'heiti'
+	  font2: 'heiti',
+	  auto: 'on'
 	};
 	const defaultConfig = Object.assign({}, config);
 	const fontList = ['yuanti', 'heiti', 'yuanti2'];
@@ -411,7 +420,7 @@
 	  YUAN_JA: 'HummingStd-E',
 	  YUAN_TRANS: "sczh-yuanti,HummingStd-E"
 	};
-	const _keys = ['origin', 'font1', 'font2', 'timeout', 'story'];
+	const _keys = ['origin', 'font1', 'font2', 'timeout', 'story', 'auto'];
 	const keys = DEV ? _keys.slice(1, _keys.length) : _keys;
 
 	const setFont = () => {
@@ -545,7 +554,7 @@
 
 	      if (fetchInfo.result) {
 	        beforeStart(fetchInfo.data);
-	        rev(fetchInfo.data.hash);
+	        rev(fetchInfo.data);
 	      } else {
 	        rej('网络错误');
 	      }
@@ -556,7 +565,9 @@
 	});
 
 	const fetchWithHash = async pathname => {
-	  const hash = await getHash;
+	  const {
+	    hash
+	  } = await getHash;
 	  const data = await request("".concat(pathname, "?v=").concat(hash));
 	  return data;
 	};
@@ -587,7 +598,9 @@
 	const getLocalData = async type => {
 	  if (DEV) return false;
 	  if (data) return data[type];
-	  const hash = await getHash;
+	  const {
+	    hash
+	  } = await getHash;
 
 	  try {
 	    const str = sessionStorage.getItem('sczh:data');
@@ -660,11 +673,14 @@
 
 	let phraseMap$1 = null;
 
-	const getPhraseObj = () => {
+	const getPhraseObj = async () => {
 	  let phrases;
 
 	  try {
-	    const modulePhrases = primJsp([], [], [MODULE_ID.PHRASE]);
+	    const {
+	      moduleId
+	    } = await getHash;
+	    const modulePhrases = primJsp([], [], [moduleId.PHRASE]);
 	    phrases = modulePhrases.default._polyglot.phrases;
 	  } catch (e) {
 	    log(e);
@@ -674,7 +690,7 @@
 	};
 
 	async function transPhrase() {
-	  const obj = getPhraseObj();
+	  const obj = await getPhraseObj();
 	  if (!obj) return; // if (ENVIRONMENT === 'development') {
 	  //   phraseMap = await getPhrase(true)
 	  //   collectPhrases(obj)
@@ -774,7 +790,7 @@
 	  let _text = text;
 
 	  if (map.has(text)) {
-	    _text = '\u200b' + map.get(text);
+	    _text = '\u200b\u200b' + map.get(text);
 	    replaceFont(style);
 	  } else if (!text.startsWith('\u200b')) {
 	    restoreFont(style);
@@ -789,7 +805,7 @@
 
 	  if (text.startsWith('\u200b\u200b')) {
 	    // 是被替换过的文本
-	    _text = text.slice(1);
+	    // _text = text.slice(1)
 	    replaceFont(style);
 	  } else if (text.trim()) {
 	    if (isType) {
@@ -1010,11 +1026,14 @@
 	  processMission(res.body.specialUserMissions);
 	};
 
-	const getRequest = () => {
+	const getRequest = async () => {
 	  let request;
 
 	  try {
-	    const moduleRequest = primJsp([], [], [MODULE_ID.REQUEST]);
+	    const {
+	      moduleId
+	    } = await getHash;
+	    const moduleRequest = primJsp([], [], [moduleId.REQUEST]);
 	    request = moduleRequest.default;
 	  } catch (e) {
 	    log(e);
@@ -1024,7 +1043,7 @@
 	};
 
 	async function requestHook() {
-	  const request = getRequest();
+	  const request = await getRequest();
 	  if (!request || !request.get) return;
 	  const originGet = request.get;
 
@@ -3255,7 +3274,7 @@
 	}));
 	});
 
-	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover > span {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span>\u5267\u60C5</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
+	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 45%;\n    height: 25%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -20%;\n    top: -21%;\n    border-radius: 20%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
 	let showToolFlag = false;
 
 	const showStoryTool = storyCache => {
@@ -3302,6 +3321,12 @@
 	      const str = papaparse.unparse(storyCache.list);
 	      tryDownload(str, storyCache.filename);
 	    }
+	  });
+	  const btnClose = document.getElementById('btn-close-sczh');
+	  btnClose.addEventListener('click', function () {
+	    cont.style.display = 'none';
+	    config.story = 'normal';
+	    saveConfig();
 	  });
 	};
 
@@ -3382,14 +3407,214 @@
 	  return nameMap;
 	};
 
-	const getModule = () => {
+	const sortWords = (list, key = 'EMPTY') => {
+	  return list.sort((prev, next) => {
+	    let valPrev = prev;
+	    let valNext = next;
+
+	    if (key !== 'EMPTY') {
+	      valPrev = prev[key];
+	      valNext = next[key];
+	    }
+
+	    if (!valNext) valNext = '';
+	    if (!valPrev) valPrev = '';
+
+	    if (valNext.length > valPrev.length) {
+	      return 1;
+	    } else if (valPrev.length > valNext.length) {
+	      return -1;
+	    } else {
+	      return 0;
+	    }
+	  });
+	};
+
+	const nounFixMap = new Map();
+	let nfLoaded = false;
+
+	const getNounFix = async () => {
+	  if (!nfLoaded) {
+	    let csv = await getLocalData('noun-fix');
+
+	    if (!csv) {
+	      csv = await fetchWithHash('/data/etc/noun-fix.csv');
+	      setLocalData('noun-fix', csv);
+	    }
+
+	    const list = parseCsv(csv);
+	    sortWords(list, 'text').forEach(item => {
+	      const text = trim(item.text, true);
+	      const fixed = trim(item.fixed, true);
+
+	      if (text) {
+	        nounFixMap.set(text, fixed);
+	      }
+	    });
+	    nfLoaded = true;
+	  }
+
+	  return nounFixMap;
+	};
+
+	const cyPrefixMap = new Map();
+	let cyfLoaded = false;
+
+	const getCaiyunPrefix = async () => {
+	  if (!cyfLoaded) {
+	    let csv = await getLocalData('caiyun-prefix');
+
+	    if (!csv) {
+	      csv = await fetchWithHash('/data/etc/caiyun-prefix.csv');
+	      setLocalData('caiyun-prefix', csv);
+	    }
+
+	    const list = parseCsv(csv);
+	    sortWords(list, 'text').forEach(item => {
+	      const text = trim(item.text, true);
+	      const fixed = trim(item.fixed, true);
+
+	      if (text) {
+	        cyPrefixMap.set(text, fixed);
+	      }
+	    });
+	    cyfLoaded = true;
+	  }
+
+	  return cyPrefixMap;
+	};
+
+	const request$1 = (url, option) => {
+	  const {
+	    method = 'GET',
+	    headers,
+	    data
+	  } = option;
+	  return fetch(url, {
+	    body: data,
+	    headers,
+	    method,
+	    mode: 'cors',
+	    referrer: 'no-referrer'
+	  }).then(res => res.json());
+	};
+
+	const caiyunTrans = async (source, lang = 'ja') => {
+	  const from = lang === 'en' ? 'en' : 'ja';
+	  const data = {
+	    detect: true,
+	    media: 'text',
+	    request_id: 'web_fanyi',
+	    trans_type: "".concat(from, "2zh"),
+	    source
+	  };
+
+	  try {
+	    const res = await request$1('https://api.interpreter.caiyunai.com/v1/translator', {
+	      data: JSON.stringify(data),
+	      method: 'POST',
+	      headers: {
+	        'accept': '*/*',
+	        'content-type': 'application/json',
+	        'referer': 'http://www.caiyunapp.com',
+	        'origin': 'http://www.caiyunapp.com',
+	        'X-Authorization': 'token cy4fgbil24jucmh8jfr5'
+	      }
+	    });
+	    return res.target;
+	  } catch (err) {
+	    return [];
+	  }
+	};
+
+	const collectText = data => {
+	  const textInfo = [];
+	  const textList = [];
+	  data.forEach((item, index) => {
+	    if (item.text) {
+	      textInfo.push({
+	        key: 'text',
+	        index
+	      });
+	      textList.push(item.text);
+	    }
+
+	    if (item.select) {
+	      textInfo.push({
+	        key: 'select',
+	        index
+	      });
+	      textList.push(item.select);
+	    }
+	  });
+	  return {
+	    textInfo,
+	    textList
+	  };
+	};
+
+	const preFix = async list => {
+	  const cyfMap = await getCaiyunPrefix();
+	  return list.map(text => {
+	    return replaceWords(text, cyfMap);
+	  });
+	};
+
+	const nounFix = async list => {
+	  const nounFixMap = await getNounFix();
+	  return list.map(text => {
+	    return replaceWords(text, nounFixMap);
+	  });
+	};
+
+	const autoTransCache$1 = new Map();
+
+	const autoTrans = async (data, nameMap, name) => {
+	  let fixedTransList;
+	  const {
+	    textInfo,
+	    textList
+	  } = collectText(data);
+
+	  if (autoTransCache$1.has(name)) {
+	    fixedTransList = autoTransCache$1.get(name);
+	  } else {
+	    const fixedTextList = await preFix(textList);
+	    const transList = await caiyunTrans(fixedTextList);
+	    fixedTransList = await nounFix(transList);
+	    autoTransCache$1.set(name, fixedTransList);
+	  }
+
+	  log(fixedTransList);
+	  fixedTransList.forEach((trans, idx) => {
+	    const {
+	      key,
+	      index
+	    } = textInfo[idx];
+	    data[index][key] = trans;
+	  });
+	  data.forEach(item => {
+	    if (item.speaker) {
+	      const speaker = trim(item.speaker, true);
+
+	      if (nameMap.has(speaker)) {
+	        item.speaker = nameMap.get(speaker);
+	      }
+	    }
+	  });
+	};
+
+	const getModule = async () => {
 	  let scnModule;
 
 	  try {
-	    const moduleLoadScenario = primJsp([], [], [MODULE_ID.SCENARIO]);
+	    const {
+	      moduleId
+	    } = await getHash;
+	    const moduleLoadScenario = primJsp([], [], [moduleId.SCENARIO]);
 	    scnModule = moduleLoadScenario.default;
 
-	    if (!moduleLoadScenario.default['load'] || !moduleLoadScenario.default['_errorEvent'] || !moduleLoadScenario.default['_handleError']) {
+	    if (!moduleLoadScenario.default || !moduleLoadScenario.default['load'] || !moduleLoadScenario.default['_errorEvent'] || !moduleLoadScenario.default['_handleError']) {
 	      throw new Error('模块不匹配');
 	    }
 	  } catch (e) {
@@ -3472,7 +3697,7 @@
 	    }
 
 	    if (item.speaker) {
-	      const speaker = trim(item.speaker);
+	      const speaker = trim(item.speaker, true);
 
 	      if (nameMap.has(speaker)) {
 	        item.speaker = nameMap.get(speaker);
@@ -3482,17 +3707,19 @@
 	};
 
 	const transScenario = async () => {
-	  const scnModule = getModule();
+	  const scnModule = await getModule();
 	  if (!scnModule) return;
 	  const originLoad = scnModule.load;
 
 	  scnModule.load = async function (...args) {
-	    const res = await originLoad.apply(this, args);
-	    log('scenario', ...args, res);
+	    const res = await originLoad.apply(this, args); // log('scenario', ...args, res)
+
 	    const type = args[0];
 	    if (!type) return res;
 
 	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/')) {
+	      log('scenario', ...args, res);
+
 	      try {
 	        const name = type.replace(/^\/assets\/json\//, '');
 
@@ -3502,10 +3729,13 @@
 	        }
 
 	        const storyMap = await getStory(name);
-	        const nameMap = await getName();
 
 	        if (storyMap) {
+	          const nameMap = await getName();
 	          transStory(res, storyMap, nameMap);
+	        } else if (config.auto === 'on') {
+	          const nameMap = await getName();
+	          await autoTrans(res, nameMap, name);
 	        }
 	      } catch (e) {
 	        log(e);
@@ -3528,7 +3758,9 @@
 
 	const addFont = async () => {
 	  const tag = document.createElement('style');
-	  const hash = await getHash;
+	  const {
+	    hash
+	  } = await getHash;
 	  tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti2\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti2.woff2?v=").concat(hash, "\");\n  }\n  ");
 
 	  if (config.font1 === 'yuanti') {
