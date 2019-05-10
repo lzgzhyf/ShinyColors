@@ -410,7 +410,7 @@
 	  timeout: 30,
 	  font1: 'yuanti',
 	  font2: 'heiti',
-	  auto: 'on'
+	  auto: 'off'
 	};
 	const defaultConfig = Object.assign({}, config);
 	const fontList = ['yuanti', 'heiti', 'yuanti2'];
