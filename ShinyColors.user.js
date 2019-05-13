@@ -3616,7 +3616,14 @@
 	    autoTransCache$1.set(name, fixedTransList);
 	  }
 
-	  log(fixedTransList.join('\n'));
+	  if (DEV) {
+	    let mergedList = [];
+	    textList.forEach((text, index) => {
+	      mergedList.push(text, fixedTransList[index]);
+	    });
+	    log(mergedList.join('\n'));
+	  }
+
 	  fixedTransList.forEach((trans, idx) => {
 	    let _trans = trans;
 	    const {
@@ -3818,8 +3825,7 @@
 
 	const main = async () => {
 	  try {
-	    addFont();
-	    await Promise.all([transPhrase(), watchText(), requestHook(), resourceHook(), transScenario()]);
+	    await Promise.all([addFont(), transPhrase(), watchText(), requestHook(), resourceHook(), transScenario()]);
 	  } catch (e) {
 	    log(e);
 	  }
