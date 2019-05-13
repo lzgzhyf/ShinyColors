@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.3
+// @version      0.4.4
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -13,7 +13,9 @@
 (function () {
 	'use strict';
 
-	const ENVIRONMENT = "";const DEV = false;
+	const ENVIRONMENT = "";
+	    const DEV = false;
+	    const SHOW_UPDATE_TEXT = false;
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -403,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.3";
+	var version = "0.4.4";
 
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
@@ -830,7 +832,7 @@
 	    construct(target, args, newTarget) {
 	      const text = args[0];
 	      const option = args[1];
-	      log('new text', ...args);
+	      if (SHOW_UPDATE_TEXT) log('new text', ...args);
 	      args[0] = fontCheck(text, option);
 	      return Reflect.construct(target, args, newTarget);
 	    }
@@ -841,7 +843,7 @@
 
 	  aoba.Text.prototype.typeText = function (...args) {
 	    const text = args[0];
-	    log('type text', ...args);
+	    if (SHOW_UPDATE_TEXT) log('type text', ...args);
 	    args[0] = fontCheck(text, this.style, true);
 	    return originTypeText.apply(this, args);
 	  };
@@ -850,7 +852,7 @@
 
 	  aoba.Text.prototype.updateText = function (t) {
 	    if (this.localStyleID !== this._style.styleID && (this.dirty = !0, this._style.styleID), this.dirty || !t) {
-	      if (DEV) log('update text', this._text);
+	      if (DEV && SHOW_UPDATE_TEXT) log('update text', this._text);
 	      const value = fontCheck(this._text, this._style);
 	      Reflect.set(this, '_text', value);
 	      return originUpdateText.call(this, t);
@@ -1079,6 +1081,26 @@
 	      await transSkill(res.body.userSupportIdol);
 	    }
 
+	    return res;
+	  };
+
+	  const originPost = request.post;
+
+	  request.post = async function (...args) {
+	    const type = args[0];
+	    const res = await originPost.apply(this, args);
+	    if (!type) return res;
+	    log('post', ...args, res.body);
+	    return res;
+	  };
+
+	  const originPut = request.put;
+
+	  request.put = async function (...args) {
+	    const type = args[0];
+	    const res = await originPut.apply(this, args);
+	    if (!type) return res;
+	    log('put', ...args, res.body);
 	    return res;
 	  };
 	}
@@ -3350,7 +3372,11 @@
 	      if (id && !/^0+$/.test(id) && id !== 'select') {
 	        storyMap.set(id, tagText(trans));
 	      } else {
-	        storyMap.set(text, tagText(trans));
+	        if (id === 'select') {
+	          storyMap.set("".concat(text, "-select"), tagText(trans));
+	        } else {
+	          storyMap.set(text, tagText(trans));
+	        }
 	      }
 	    }
 	  });
@@ -3705,9 +3731,10 @@
 
 	    if (item.select) {
 	      const select = removeWrap(item.select);
+	      const sKey = "".concat(select, "-select");
 
-	      if (storyMap.has(select)) {
-	        item.select = storyMap.get(select);
+	      if (storyMap.has(sKey)) {
+	        item.select = storyMap.get(sKey);
 	      }
 	    }
 
@@ -3728,9 +3755,9 @@
 
 	  scnModule.load = async function (...args) {
 	    const res = await originLoad.apply(this, args);
-	    if (DEV) log('scenario', ...args, res);
 	    const type = args[0];
 	    if (!type) return res;
+	    if (DEV && type.includes('/assets/json/')) log('scenario', ...args, res);
 
 	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/') || type.includes('/produce_communication_televisions/')) {
 	      try {
