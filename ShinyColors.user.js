@@ -295,7 +295,7 @@
 	};
 
 	const replaceQuote = str => {
-	  return str.replace(/"([^"]*)"/g, '“$1”').replace(/'([^']*)'/g, '‘$1’');
+	  return str.replace(/"([^"]*)"/g, '“$1”').replace(/'([^']*)'/g, '“$1”');
 	};
 
 	/** `Object#toString` result references. */
