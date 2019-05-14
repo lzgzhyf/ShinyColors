@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.4
+// @version      0.4.5
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,8 +405,9 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.4";
+	var version = "0.4.5";
 
+	const PREVIEW_COUNT = 5;
 	const config = {
 	  origin: 'https://biuuu.github.io/ShinyColors',
 	  hash: '',
@@ -674,7 +675,7 @@
 	};
 
 	const tagText = text => {
-	  return "\u200B\u200B".concat(text);
+	  return "\u200B".concat(text);
 	};
 
 	let phraseMap$1 = null;
@@ -796,7 +797,7 @@
 	  let _text = text;
 
 	  if (map.has(text)) {
-	    _text = '\u200b\u200b' + map.get(text);
+	    _text = '\u200b' + map.get(text);
 	    replaceFont(style);
 	  } else if (!text.startsWith('\u200b')) {
 	    restoreFont(style);
@@ -809,9 +810,7 @@
 	  if (!isString_1(text)) return text;
 	  let _text = text;
 
-	  if (text.startsWith('\u200b\u200b')) {
-	    // 是被替换过的文本
-	    // _text = text.slice(1)
+	  if (text.startsWith('\u200b')) {
 	    replaceFont(style);
 	  } else if (text.trim()) {
 	    if (isType) {
@@ -3301,7 +3300,76 @@
 	}));
 	});
 
-	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 65%;\n    height: 35%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -28%;\n    top: -27%;\n    border-radius: 10%;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
+	const storyTemp = new Map();
+	let storyIndex = null;
+
+	const getStoryMap = csv => {
+	  const list = parseCsv(csv);
+	  const storyMap = new Map();
+	  list.forEach(item => {
+	    const id = trim(item.id, true);
+	    const text = removeWrap(trimWrap(item.text));
+	    const trans = trimWrap(item.trans);
+	    const name = trim(item.name, true);
+
+	    if (text && trans) {
+	      if (id && !/^0+$/.test(id) && id !== 'select') {
+	        storyMap.set(id, tagText(trans));
+	      } else {
+	        if (id === 'select') {
+	          storyMap.set("".concat(text, "-select"), tagText(trans));
+	        } else {
+	          storyMap.set(text, tagText(trans));
+	        }
+	      }
+	    }
+
+	    if (id && name && id === 'info') {
+	      storyMap.set('name', name);
+	    }
+	  });
+	  return storyMap;
+	};
+
+	const getStory = async name => {
+	  if (!storyIndex) {
+	    let storyIndexStr = await getLocalData('story-index');
+
+	    if (!storyIndexStr) {
+	      const storyIndexData = await fetchWithHash('/story.json');
+	      storyIndex = new Map(storyIndexData);
+	      setLocalData('story-index', JSON.stringify(storyIndexStr));
+	    } else {
+	      storyIndex = new Map(JSON.parse(storyIndexStr));
+	    }
+	  }
+
+	  if (storyIndex.has(name)) {
+	    if (storyTemp.has(name)) {
+	      return storyTemp.get(name);
+	    } else {
+	      const csvPath = storyIndex.get(name);
+	      const csvStr = await fetchWithHash(csvPath);
+	      const storyMap = getStoryMap(csvStr);
+	      storyTemp.set(name, storyMap);
+	      return storyMap;
+	    }
+	  }
+
+	  return false;
+	};
+
+	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 65%;\n    height: 35%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -28%;\n    top: -27%;\n    border-radius: 10%;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" multiple accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
+
+	const savePreview = map => {
+	  const arr = [...map].slice(-PREVIEW_COUNT);
+	  const newArr = arr.map(item => {
+	    item[1] = [...item[1]];
+	    return item;
+	  });
+	  sessionStorage.setItem('sczh:preview', JSON.stringify(newArr));
+	};
+
 	let showToolFlag = false;
 
 	const showStoryTool = storyCache => {
@@ -3355,60 +3423,29 @@
 	    config.story = 'normal';
 	    saveConfig();
 	  });
-	};
+	  const iptPreview = document.getElementById('ipt-preview-sczh');
+	  iptPreview.addEventListener('change', function () {
+	    const files = this.files;
+	    if (!files.length) return;
+	    files.forEach(file => {
+	      const reader = new FileReader();
 
-	const storyTemp = new Map();
-	let storyIndex = null;
+	      reader.onload = e => {
+	        const text = e.target.result;
+	        const storyMap = getStoryMap(text);
 
-	const getStoryMap = csv => {
-	  const list = parseCsv(csv);
-	  const storyMap = new Map();
-	  list.forEach(item => {
-	    const id = trim(item.id, true);
-	    const text = removeWrap(trimWrap(item.text));
-	    const trans = trimWrap(item.trans);
+	        if (storyMap.has('name')) {
+	          const _name = storyMap.get('name');
 
-	    if (text && trans) {
-	      if (id && !/^0+$/.test(id) && id !== 'select') {
-	        storyMap.set(id, tagText(trans));
-	      } else {
-	        if (id === 'select') {
-	          storyMap.set("".concat(text, "-select"), tagText(trans));
-	        } else {
-	          storyMap.set(text, tagText(trans));
+	          storyCache.preview.set(_name, storyMap);
+	          savePreview(storyCache.preview);
+	          alert("\u5BFC\u5165".concat(_name, "\u6210\u529F"));
 	        }
-	      }
-	    }
+	      };
+
+	      reader.readAsText(file);
+	    });
 	  });
-	  return storyMap;
-	};
-
-	const getStory = async name => {
-	  if (!storyIndex) {
-	    let storyIndexStr = await getLocalData('story-index');
-
-	    if (!storyIndexStr) {
-	      const storyIndexData = await fetchWithHash('/story.json');
-	      storyIndex = new Map(storyIndexData);
-	      setLocalData('story-index', JSON.stringify(storyIndexStr));
-	    } else {
-	      storyIndex = new Map(JSON.parse(storyIndexStr));
-	    }
-	  }
-
-	  if (storyIndex.has(name)) {
-	    if (storyTemp.has(name)) {
-	      return storyTemp.get(name);
-	    } else {
-	      const csvPath = storyIndex.get(name);
-	      const csvStr = await fetchWithHash(csvPath);
-	      const storyMap = getStoryMap(csvStr);
-	      storyTemp.set(name, storyMap);
-	      return storyMap;
-	    }
-	  }
-
-	  return false;
 	};
 
 	const nameMap = new Map();
@@ -3675,7 +3712,29 @@
 	const storyCache = {
 	  name: '',
 	  filename: '',
-	  list: ''
+	  list: '',
+	  preview: new Map()
+	};
+	let previewLoaded = false;
+
+	const getPreview = () => {
+	  if (previewLoaded) return;
+	  previewLoaded = true;
+	  const str = sessionStorage.getItem('sczh:preview');
+	  if (!str) return;
+
+	  try {
+	    const arr = JSON.parse(str);
+	    const map = new Map(arr);
+
+	    for (let [key, value] of map) {
+	      map.set(key, new Map(value));
+	    }
+
+	    storyCache.preview = map;
+	  } catch (e) {
+	    log(e);
+	  }
 	};
 
 	const saveData = (data, name) => {
@@ -3769,13 +3828,20 @@
 	    if (type.includes('/produce_events/') || type.includes('/produce_communications/') || type.includes('/produce_communications_promises/') || type.includes('/produce_communication_promise_results/') || type.includes('/game_event_communications/') || type.includes('/special_communications/') || type.includes('/produce_communication_cheers/') || type.includes('/produce_communication_auditions/') || type.includes('/produce_communication_televisions/')) {
 	      try {
 	        const name = type.replace(/^\/assets\/json\//, '');
+	        let storyMap;
 
 	        if (config.story === 'edit') {
 	          saveData(res, name);
 	          showStoryTool(storyCache);
 	        }
 
-	        const storyMap = await getStory(name);
+	        getPreview();
+
+	        if (storyCache.preview.has(name)) {
+	          storyMap = storyCache.preview.get(name);
+	        } else {
+	          storyMap = await getStory(name);
+	        }
 
 	        if (storyMap) {
 	          const nameMap = await getName();
@@ -3808,7 +3874,7 @@
 	  const {
 	    hash
 	  } = await getHash;
-	  tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti2\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti2.woff2?v=").concat(hash, "\");\n  }\n  ");
+	  tag.innerHTML = "\n  @font-face {\n    font-family: \"sczh-heiti\";\n    src: url(\"".concat(config.origin, "/data/font/heiti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash, "\");\n  }\n  @font-face {\n    font-family: \"sczh-yuanti2\";\n    src: url(\"").concat(config.origin, "/data/font/yuanti2.woff2?v=").concat(hash, "\");\n  }\n  ::-webkit-scrollbar {\n    display: none;\n  }\n  ");
 
 	  if (config.font1 === 'yuanti') {
 	    preload("".concat(config.origin, "/data/font/yuanti.woff2?v=").concat(hash));
