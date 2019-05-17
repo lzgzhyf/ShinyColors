@@ -1146,19 +1146,21 @@
 	      log(this.url, this.name);
 	    }
 
-	    const imageMap = await getImage();
+	    try {
+	      const imageMap = await getImage();
 
-	    if (type === 'image' && imageMap.has(this.name)) {
-	      const data = imageMap.get(this.name);
+	      if (type === 'image' && imageMap.has(this.name)) {
+	        const data = imageMap.get(this.name);
 
-	      if (this.url.endsWith("v=".concat(data.version))) {
-	        this.url = "".concat(config.origin, "/data/image/").concat(data.url, "?V=").concat(config.hash);
-	        this.crossOrigin = true;
-	      } else {
-	        log('%cimage version not match', 'color:#fc4175');
-	        log(this.name, this.url);
+	        if (this.url.endsWith("v=".concat(data.version))) {
+	          this.url = "".concat(config.origin, "/data/image/").concat(data.url, "?V=").concat(config.hash);
+	          this.crossOrigin = true;
+	        } else {
+	          log('%cimage version not match', 'color:#fc4175');
+	          log(this.name, this.url);
+	        }
 	      }
-	    }
+	    } catch (e) {}
 
 	    return originLoadElement.call(this, type);
 	  };
