@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.5
+// @version      0.4.6
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.5";
+	var version = "0.4.6";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -1119,11 +1119,15 @@
 	    const list = parseCsv(csv);
 	    list.forEach(item => {
 	      if (item && item.name) {
-	        const name = trim(item.name);
-	        const url = trim(item.url);
+	        const name = trim(item.name, true);
+	        const url = trim(item.url, true);
+	        const version = trim(item.version, true) || '1';
 
 	        if (name && url) {
-	          imageMap.set(name, url);
+	          imageMap.set(name, {
+	            url,
+	            version
+	          });
 	        }
 	      }
 	    });
@@ -1135,16 +1139,25 @@
 
 	async function resourceHook() {
 	  if (!GLOBAL.aoba) return;
-	  const imageMap = await getImage();
 	  const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
-	  aoba.loaders.Resource.prototype._loadElement = function (type) {
-	    // if (type === 'image' && this.url.includes('697481939646e7371fd37596e0055b26')) {
-	    //   log(this.url, this.name)
-	    // }
+	  aoba.loaders.Resource.prototype._loadElement = async function (type) {
+	    if (DEV && type === 'image' && this.url.includes('f0fa3e4bf9feac6c1c8b5cec74d2946bb638')) {
+	      log(this.url, this.name);
+	    }
+
+	    const imageMap = await getImage();
+
 	    if (type === 'image' && imageMap.has(this.name)) {
-	      this.url = "".concat(config.origin, "/data/image/").concat(imageMap.get(this.name), "?V=").concat(config.hash);
-	      this.crossOrigin = true;
+	      const data = imageMap.get(this.name);
+
+	      if (this.url.endsWith("v=".concat(data.version))) {
+	        this.url = "".concat(config.origin, "/data/image/").concat(data.url, "?V=").concat(config.hash);
+	        this.crossOrigin = true;
+	      } else {
+	        log('%cimage version not match', 'color:#fc4175');
+	        log(this.name, this.url);
+	      }
 	    }
 
 	    return originLoadElement.call(this, type);
