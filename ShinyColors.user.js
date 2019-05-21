@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.7
+// @version      0.4.8
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.7";
+	var version = "0.4.8";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -1013,28 +1013,109 @@
 	  });
 	};
 
-	const transMission = async res => {
+	const transMission = async data => {
 	  // if (ENVIRONMENT === 'development') {
 	  //   missionMap = await getMission(true)
-	  //   collectMissions(res)
+	  //   collectMissions(data)
 	  //   log(unknownMissions.join(',\n'))
 	  //   return
 	  // }
 	  missionMap$1 = await getMission();
-	  processMission(res.body.dailyUserMissions);
-	  processMission(res.body.weeklyUserMissions);
-	  res.body.eventUserMissions.forEach(item => {
+	  processMission(data.dailyUserMissions);
+	  processMission(data.weeklyUserMissions);
+	  data.eventUserMissions.forEach(item => {
 	    if (item && item.userMissions) {
 	      processMission(item.userMissions);
 	    }
 	  });
-	  processMission(res.body.normalUserMissions);
-	  processMission(res.body.specialUserMissions);
+	  processMission(data.normalUserMissions);
+	  processMission(data.specialUserMissions);
 	};
 
-	const reportMission = async res => {
+	const reportMission = async data => {
 	  missionMap$1 = await getMission();
-	  processMission(res.body.reportUserMissions);
+	  processMission(data.reportUserMissions);
+	};
+
+	const storyTemp = new Map();
+	const storyTitle = new Map();
+	let storyIndex = null;
+
+	const collectStoryTitle = data => {
+	  if (data.communications && data.communications.length) {
+	    data.communications.forEach(item => {
+	      storyTitle.set(item.communicationId, item.title);
+	    });
+	  } else if (data.idol && data.idol.produceIdolEvents) {
+	    data.idol.produceIdolEvents.forEach(item => {
+	      storyTitle.set(item.id, item.title);
+	    });
+	    data.idol.produceAfterEvents.forEach(item => {
+	      storyTitle.set(item.id, item.title);
+	    });
+	  } else if (data.supportIdol.produceSupportIdolEvents) {
+	    data.supportIdol.produceSupportIdolEvents.forEach(item => {
+	      storyTitle.set(item.id, item.title);
+	    });
+	  }
+
+	  return storyTitle;
+	};
+
+	const getStoryMap = csv => {
+	  const list = parseCsv(csv);
+	  const storyMap = new Map();
+	  list.forEach(item => {
+	    const id = trim(item.id, true);
+	    const text = removeWrap(trimWrap(item.text));
+	    const trans = trimWrap(item.trans);
+	    const name = trim(item.name, true);
+
+	    if (text && trans) {
+	      if (id && !/^0+$/.test(id) && id !== 'select') {
+	        storyMap.set(id, tagText(trans));
+	      } else {
+	        if (id === 'select') {
+	          storyMap.set("".concat(text, "-select"), tagText(trans));
+	        } else {
+	          storyMap.set(text, tagText(trans));
+	        }
+	      }
+	    }
+
+	    if (id && name && id === 'info') {
+	      storyMap.set('name', name);
+	    }
+	  });
+	  return storyMap;
+	};
+
+	const getStory = async name => {
+	  if (!storyIndex) {
+	    let storyIndexStr = await getLocalData('story-index');
+
+	    if (!storyIndexStr) {
+	      const storyIndexData = await fetchWithHash('/story.json');
+	      storyIndex = new Map(storyIndexData);
+	      setLocalData('story-index', JSON.stringify(storyIndexStr));
+	    } else {
+	      storyIndex = new Map(JSON.parse(storyIndexStr));
+	    }
+	  }
+
+	  if (storyIndex.has(name)) {
+	    if (storyTemp.has(name)) {
+	      return storyTemp.get(name);
+	    } else {
+	      const csvPath = storyIndex.get(name);
+	      const csvStr = await fetchWithHash(csvPath);
+	      const storyMap = getStoryMap(csvStr);
+	      storyTemp.set(name, storyMap);
+	      return storyMap;
+	    }
+	  }
+
+	  return false;
 	};
 
 	const getRequest = async () => {
@@ -1067,8 +1148,13 @@
 	    try {
 	      if (/^userSupportIdols\/\d+$/.test(type) || type === 'userSupportIdols/statusMax') {
 	        await transSkill(res.body);
+	        collectStoryTitle(res.body);
+	      } else if (/^userIdols\/\d+$/.test(type)) {
+	        collectStoryTitle(res.body);
 	      } else if (type === 'userMissions') {
-	        await transMission(res);
+	        await transMission(res.body);
+	      } else if (type === 'characterAlbums') {
+	        collectStoryTitle(res.body);
 	      }
 	    } catch (e) {
 	      log(e);
@@ -1106,7 +1192,7 @@
 
 	    try {
 	      if (type === 'myPage') {
-	        await reportMission(res);
+	        await reportMission(res.body);
 	      }
 	    } catch (e) {
 	      log(e);
@@ -3337,65 +3423,6 @@
 	}));
 	});
 
-	const storyTemp = new Map();
-	let storyIndex = null;
-
-	const getStoryMap = csv => {
-	  const list = parseCsv(csv);
-	  const storyMap = new Map();
-	  list.forEach(item => {
-	    const id = trim(item.id, true);
-	    const text = removeWrap(trimWrap(item.text));
-	    const trans = trimWrap(item.trans);
-	    const name = trim(item.name, true);
-
-	    if (text && trans) {
-	      if (id && !/^0+$/.test(id) && id !== 'select') {
-	        storyMap.set(id, tagText(trans));
-	      } else {
-	        if (id === 'select') {
-	          storyMap.set("".concat(text, "-select"), tagText(trans));
-	        } else {
-	          storyMap.set(text, tagText(trans));
-	        }
-	      }
-	    }
-
-	    if (id && name && id === 'info') {
-	      storyMap.set('name', name);
-	    }
-	  });
-	  return storyMap;
-	};
-
-	const getStory = async name => {
-	  if (!storyIndex) {
-	    let storyIndexStr = await getLocalData('story-index');
-
-	    if (!storyIndexStr) {
-	      const storyIndexData = await fetchWithHash('/story.json');
-	      storyIndex = new Map(storyIndexData);
-	      setLocalData('story-index', JSON.stringify(storyIndexStr));
-	    } else {
-	      storyIndex = new Map(JSON.parse(storyIndexStr));
-	    }
-	  }
-
-	  if (storyIndex.has(name)) {
-	    if (storyTemp.has(name)) {
-	      return storyTemp.get(name);
-	    } else {
-	      const csvPath = storyIndex.get(name);
-	      const csvStr = await fetchWithHash(csvPath);
-	      const storyMap = getStoryMap(csvStr);
-	      storyTemp.set(name, storyMap);
-	      return storyMap;
-	    }
-	  }
-
-	  return false;
-	};
-
 	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 65%;\n    height: 35%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -28%;\n    top: -27%;\n    border-radius: 10%;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" multiple accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
 
 	const savePreview = map => {
@@ -3774,8 +3801,19 @@
 	  }
 	};
 
+	const getCid = name => {
+	  const res = name.match(/\/(\d+)$/);
+	  if (res && res[1]) return res[1];
+	  return '';
+	};
+
 	const saveData = (data, name) => {
-	  const filename = name.replace(/\//g, '_');
+	  const _name = name.replace('.json', '');
+
+	  const _cid = getCid(_name);
+
+	  const filename = storyTitle.get(_cid) || _name.replace(/\//g, '_');
+
 	  const list = [];
 	  data.forEach(item => {
 	    let text = trim(replaceWrap(item.text));
