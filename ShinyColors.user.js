@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.6
+// @version      0.4.7
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.6";
+	var version = "0.4.7";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -1032,6 +1032,11 @@
 	  processMission(res.body.specialUserMissions);
 	};
 
+	const reportMission = async res => {
+	  missionMap$1 = await getMission();
+	  processMission(res.body.reportUserMissions);
+	};
+
 	const getRequest = async () => {
 	  let request;
 
@@ -1090,6 +1095,11 @@
 	    const res = await originPost.apply(this, args);
 	    if (!type) return res;
 	    log('post', ...args, res.body);
+
+	    if (type === 'myPage') {
+	      await reportMission(res);
+	    }
+
 	    return res;
 	  };
 
@@ -1137,12 +1147,12 @@
 	  return imageMap;
 	};
 
-	async function resourceHook() {
+	function resourceHook() {
 	  if (!GLOBAL.aoba) return;
 	  const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
 	  aoba.loaders.Resource.prototype._loadElement = async function (type) {
-	    if (DEV && type === 'image' && this.url.includes('f0fa3e4bf9feac6c1c8b5cec74d2946bb638')) {
+	    if (DEV && type === 'image' && this.url.includes('bc86b91f4f40a00be6c149478bb5f370')) {
 	      log(this.url, this.name);
 	    }
 
@@ -3906,7 +3916,8 @@
 
 	const main = async () => {
 	  try {
-	    await Promise.all([addFont(), transPhrase(), watchText(), requestHook(), resourceHook(), transScenario()]);
+	    resourceHook();
+	    await Promise.all([addFont(), transPhrase(), watchText(), requestHook(), transScenario()]);
 	  } catch (e) {
 	    log(e);
 	  }
