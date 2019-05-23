@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.8
+// @version      0.4.9
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.8";
+	var version = "0.4.9";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -3423,7 +3423,7 @@
 	}));
 	});
 
-	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #f3f5fe;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n    cursor: pointer;\n    user-select: none;\n  }\n  .story-tool-btns {\n    position: absolute;\n    width: 240%;\n    height: 100%;\n    display: none;\n    right: -2px;\n    top: -2px;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    border-radius: 20%;\n    border: 2px solid rgba(78, 144, 104, 0.7);\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #409591;\n    text-shadow: 0 0 7px #fff;\n  }\n  .story-tool-btns .btn-download-sczh {\n    border-radius: 0 20% 20% 0;\n    border-left: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  .story-tool-btns label {\n    border-radius: 20% 0 0 20%;\n    color: rgba(250, 43, 101, 0.52);\n    border: 2px solid rgba(250, 43, 101, 0.52);\n    border-right: 1px solid rgba(0, 0, 0, 0.1);\n  }\n  #sczh-story-tool .btn-close-sczh {\n    width: 65%;\n    height: 35%;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    position: absolute;\n    right: -28%;\n    top: -27%;\n    border-radius: 10%;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 0.4em;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" multiple accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ";
+	const html = "\n  <style>\n  #sczh-story-tool {\n    position: absolute;\n    display: none;\n    background: #ffffff;\n    border-radius: 24px;\n    box-sizing: border-box;\n    font-family: sczh-yuanti;\n    align-items: center;\n    justify-content: center;\n    color: #ff6499;\n    text-shadow: 0 0 6px #fff;\n    cursor: pointer;\n    user-select: none;\n    width: 100px;\n    height: 100px;\n    font-size: 32px;\n    border: 7px solid transparent;\n    border-image: url(".concat(config.origin, "/data/image/border.png);\n    border-image-slice: 7;\n    transform-origin: top right;\n  }\n  .story-tool-btns {\n    width: 100%;\n    height: 100%;\n    display: none;\n  }\n  .story-tool-btns .btn-download-sczh,\n  .story-tool-btns label {\n    flex: 1;\n    height: 100%;\n    background: #fff;\n    display: flex;\n    box-sizing: content-box;\n    align-items: center;\n    justify-content: center;\n    cursor: pointer;\n    color: #c0aade;\n    text-shadow: 0 0 6px #fff;\n  }\n  .story-tool-btns .btn-download-sczh:hover {\n    color: #9f66ec;\n  }\n  .story-tool-btns label {\n    color: rgb(242, 156, 199);\n    border-right: 1px solid #c9c9c9;\n  }\n  #sczh-story-tool .btn-close-sczh {\n    height: 25px;\n    width: 50px;\n    background: rgba(0, 0, 0, 0.58);\n    color: #fff;\n    letter-spacing: 2px;\n    position: absolute;\n    right: -25px;\n    top: -20px;\n    border-radius: 4px;\n    display: none;\n    align-items: center;\n    justify-content: center;\n    z-index: 1;\n    font-family: sczh-heiti;\n    font-size: 15px;\n  }\n  #sczh-story-tool:hover {\n    width: 200px;\n  }\n  #sczh-story-tool:hover .story-tool-btns {\n    display: flex;\n  }\n  #sczh-story-tool:hover .btn-close-sczh {\n    display: flex;\n  }\n  #sczh-story-tool:hover > .text-sczh {\n    display: none;\n  }\n  #sczh-story-tool .btn-close-sczh:hover {\n    background: rgba(0, 0, 0, 0.9);\n  }\n  .story-tool-btns label:hover {\n    color: #f270b1;\n  }\n  .story-tool-btns .btn-download-sczh:hover,\n  .story-tool-btns label:hover {\n    background-color: #f7f7f7;\n  }\n  </style>\n  <div id=\"sczh-story-tool\"><span class=\"text-sczh\">\u5267\u60C5</span>\n    <span id=\"btn-close-sczh\" class=\"btn-close-sczh\">\u5173\u95ED</span>\n    <input type=\"file\" style=\"display:none\" id=\"ipt-preview-sczh\" multiple accept=\".csv\">\n    <div class=\"story-tool-btns\">\n      <label for=\"ipt-preview-sczh\">\u9884\u89C8</label>\n      <div id=\"btn-download-sczh\" class=\"btn-download-sczh\">\u4E0B\u8F7D</div>\n    </div>\n  </div>\n  ");
 
 	const savePreview = map => {
 	  const arr = [...map].slice(-PREVIEW_COUNT);
@@ -3443,7 +3443,6 @@
 	  const cont = document.getElementById('sczh-story-tool');
 	  const setToolPos = debounce_1(() => {
 	    const pos = [0.017, 0.22];
-	    const size = [0.058, 0.058];
 	    const height = window.innerHeight;
 	    const width = window.innerWidth;
 	    const h_w = height / width;
@@ -3462,9 +3461,9 @@
 
 	    cont.style.right = Math.floor(offsetRight + pos[0] * cw) + 'px';
 	    cont.style.top = Math.floor(offsetTop + pos[1] * ch) + 'px';
-	    cont.style.width = Math.floor(size[0] * cw) + 'px';
-	    cont.style.height = Math.floor(size[1] * cw) + 'px';
-	    cont.style.fontSize = Math.floor(size[1] * cw * 0.35) + 'px';
+	    cont.style.transform = "scale(".concat((ch / 900).toFixed(3), ")"); // cont.style.width = Math.floor(size[0] * cw) + 'px'
+	    // cont.style.height = Math.floor(size[1] * cw) + 'px'
+	    // cont.style.fontSize = Math.floor(size[1] * cw * 0.35) + 'px'
 
 	    if (storyCache.name) {
 	      cont.style.display = 'flex';
