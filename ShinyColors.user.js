@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.9
+// @version      0.4.10
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
 // @match        https://shinycolors.enza.fun/*
-// @run-at       document-end
+// @run-at       document-start
 // @updateURL    https://biuuu.github.io/ShinyColors/ShinyColors.user.js
 // @supportURL   https://github.com/biuuu/ShinyColors/issues
 // ==/UserScript==
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.9";
+	var version = "0.4.10";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -1245,8 +1245,9 @@
 	  return imageMap;
 	};
 
+	let replaced = false;
 	function resourceHook() {
-	  if (!GLOBAL.aoba) return;
+	  if (!aoba || replaced) return;
 	  const originLoadElement = aoba.loaders.Resource.prototype._loadElement;
 
 	  aoba.loaders.Resource.prototype._loadElement = async function (type) {
@@ -1272,6 +1273,8 @@
 
 	    return originLoadElement.call(this, type);
 	  };
+
+	  replaced = true;
 	}
 
 	/**
@@ -3975,5 +3978,6 @@
 	setTimeout(() => {
 	  window.addEventListener('load', main);
 	});
+	resourceHook();
 
 }());
