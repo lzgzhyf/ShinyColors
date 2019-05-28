@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.11
+// @version      0.5.0
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -236,8 +236,8 @@
 	  return full ? str.trim() : str.trimEnd();
 	};
 
-	const trimWrap = str => {
-	  return trim(str).replace(/\\r/g, '\r').replace(/\\n/g, '\n');
+	const trimWrap = (str, full) => {
+	  return trim(str, full).replace(/\\r/g, '\r').replace(/\\n/g, '\n');
 	};
 
 	let _console;
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.11";
+	var version = "0.5.0";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -710,11 +710,49 @@
 	  }
 	}
 
-	const commonMap = new Map();
+	const itemMap = new Map();
+	const itemLimitMap = new Map();
 	let loaded$1 = false;
 
-	const getCommMap = async () => {
+	const getItem = async () => {
 	  if (!loaded$1) {
+	    let csv = await getLocalData('item');
+
+	    if (!csv) {
+	      csv = await fetchWithHash('/data/item.csv');
+	      setLocalData('item', csv);
+	    }
+
+	    const list = parseCsv(csv);
+	    list.forEach(item => {
+	      if (item && item.text) {
+	        const text = trim(item.text, true);
+	        const trans = trimWrap(item.trans, true);
+	        const type = trim(item.type, true) || 'normal';
+
+	        if (text && trans) {
+	          if (type === 'limit') {
+	            itemLimitMap.set(text, trans);
+	          } else {
+	            itemMap.set(text, trans);
+	          }
+	        }
+	      }
+	    });
+	    loaded$1 = true;
+	  }
+
+	  return {
+	    itemMap,
+	    itemLimitMap
+	  };
+	};
+
+	let commonMap = new Map();
+	let loaded$2 = false;
+
+	const getCommMap = async () => {
+	  if (!loaded$2) {
 	    let csv = await getLocalData('common');
 
 	    if (!csv) {
@@ -734,17 +772,21 @@
 	        }
 	      }
 	    });
-	    loaded$1 = true;
+	    const {
+	      itemMap
+	    } = await getItem();
+	    commonMap = new Map([...itemMap, ...commonMap]);
+	    loaded$2 = true;
 	  }
 
 	  return commonMap;
 	};
 
 	const typeTextMap = new Map();
-	let loaded$2 = false;
+	let loaded$3 = false;
 
 	const getTypeTextMap = async () => {
-	  if (!loaded$2) {
+	  if (!loaded$3) {
 	    let csv = await getLocalData('type-text');
 
 	    if (!csv) {
@@ -764,7 +806,7 @@
 	        }
 	      }
 	    });
-	    loaded$2 = true;
+	    loaded$3 = true;
 	  }
 
 	  return typeTextMap;
@@ -965,10 +1007,10 @@
 	};
 
 	const missionMap = new Map();
-	let loaded$3 = false;
+	let loaded$4 = false;
 
 	const getMission = async (full = false) => {
-	  if (!loaded$3) {
+	  if (!loaded$4) {
 	    let csv = await getLocalData('mission');
 
 	    if (!csv) {
@@ -987,7 +1029,7 @@
 	        }
 	      }
 	    });
-	    loaded$3 = true;
+	    loaded$4 = true;
 	  }
 
 	  return missionMap;
@@ -1118,6 +1160,78 @@
 	  return false;
 	};
 
+	const userItemTypes = ['userRecoveryItems', 'userProduceItems', 'userExchangeItems', 'userLotteryTickets', 'userEvolutionItems', 'userGashaTickets', 'userScoutTickets', 'userEnhancementItems'];
+	const itemTypes = ['produceItem', 'recoveryItem', 'exchangeItem', 'lotteryTicket', 'evolutionItem', 'gashaTicket', 'scoutTicket', 'enhancementItem'];
+
+	const transItem = (item, key, {
+	  itemMap,
+	  itemLimitMap
+	}) => {
+	  let text = item[key];
+	  let limit = '';
+
+	  if (/[\r\n]{1,2}\[[^\]]+\]$/.test(text)) {
+	    let rgs = text.match(/([\s\S]+)[\r\n]{1,2}(\[[^\]]+\])$/);
+
+	    if (rgs && rgs[1]) {
+	      text = rgs[1];
+
+	      if (itemLimitMap.has(rgs[2])) {
+	        limit = itemLimitMap.get(rgs[2]);
+	      }
+	    }
+	  }
+
+	  let trans = text;
+	  text = text.replace(/\r?\n|\r/g, '\\n');
+
+	  if (itemMap.has(text)) {
+	    trans = itemMap.get(text);
+
+	    if (limit) {
+	      trans += "\n".concat(limit);
+	    }
+
+	    item[key] = tagText(trans);
+	  }
+	};
+
+	const transShopItem = async data => {
+	  const maps = await getItem();
+
+	  if (data && Array.isArray(data.userShops)) {
+	    data.userShops.forEach(shop => {
+	      if (shop && shop.shopMerchandises) {
+	        shop.shopMerchandises.forEach(item => {
+	          transItem(item, 'title', maps);
+	          transItem(item, 'comment', maps);
+	        });
+	      }
+	    });
+	  }
+	};
+
+	const transUserItem = async data => {
+	  const maps = await getItem();
+
+	  if (Array.isArray(data)) {
+	    data.forEach(obj => {
+	      const item = obj[itemTypes[0]] || obj[itemTypes[1]] || obj[itemTypes[2]] || obj[itemTypes[3]] || obj[itemTypes[4]] || obj[itemTypes[5]] || obj[itemTypes[6]] || obj[itemTypes[7]];
+	      transItem(item, 'name', maps);
+	      transItem(item, 'comment', maps);
+	    });
+	  }
+	};
+
+	const transShopPurchase = async data => {
+	  const maps = await getItem();
+
+	  if (data && data.shopMerchandise) {
+	    transItem(data.shopMerchandise, 'title', maps);
+	    transItem(data.shopMerchandise, 'comment', maps);
+	  }
+	};
+
 	const getRequest = async () => {
 	  let request;
 
@@ -1155,6 +1269,10 @@
 	        await transMission(res.body);
 	      } else if (type === 'characterAlbums') {
 	        collectStoryTitle(res.body);
+	      } else if (type === 'userShops' || type === 'userIdolPieceShops') {
+	        await transShopItem(res.body);
+	      } else if (userItemTypes.includes(type)) {
+	        await transUserItem(res.body);
 	      }
 	    } catch (e) {
 	      log(e);
@@ -1193,6 +1311,10 @@
 	    try {
 	      if (type === 'myPage') {
 	        await reportMission(res.body);
+	      } else if (type === 'userShops/actions/purchase') {
+	        await transShopPurchase(res.body);
+	      } else if (/produces\/\d+\/actions\/ready/.test(type)) {
+	        await transUserItem(res.body.userProduceItems);
 	      }
 	    } catch (e) {
 	      log(e);
@@ -1213,10 +1335,10 @@
 	}
 
 	const imageMap = new Map();
-	let loaded$4 = false;
+	let loaded$5 = false;
 
 	const getImage = async () => {
-	  if (!loaded$4) {
+	  if (!loaded$5) {
 	    let csv = await getLocalData('image');
 
 	    if (!csv) {
@@ -1239,7 +1361,7 @@
 	        }
 	      }
 	    });
-	    loaded$4 = true;
+	    loaded$5 = true;
 	  }
 
 	  return imageMap;
@@ -3515,10 +3637,10 @@
 	};
 
 	const nameMap = new Map();
-	let loaded$5 = false;
+	let loaded$6 = false;
 
 	const getName = async () => {
-	  if (!loaded$5) {
+	  if (!loaded$6) {
 	    let csv = await getLocalData('name');
 
 	    if (!csv) {
@@ -3535,7 +3657,7 @@
 	        nameMap.set(name, tagText(trans));
 	      }
 	    });
-	    loaded$5 = true;
+	    loaded$6 = true;
 	  }
 
 	  return nameMap;
