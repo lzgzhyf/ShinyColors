@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.4.10
+// @version      0.4.11
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.4.10";
+	var version = "0.4.11";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -3978,6 +3978,5 @@
 	setTimeout(() => {
 	  window.addEventListener('load', main);
 	});
-	resourceHook();
 
 }());
