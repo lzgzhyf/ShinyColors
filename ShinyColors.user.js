@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         偶像大师ShinyColors汉化
 // @namespace    https://github.com/biuuu/ShinyColors
-// @version      0.5.0
+// @version      0.5.1
 // @description  提交翻译或问题请到 https://github.com/biuuu/ShinyColors
 // @icon         https://shinycolors.enza.fun/icon_192x192.png
 // @author       biuuu
@@ -405,7 +405,7 @@
 
 	var isPlainObject_1 = isPlainObject;
 
-	var version = "0.5.0";
+	var version = "0.5.1";
 
 	const PREVIEW_COUNT = 5;
 	const config = {
@@ -610,13 +610,13 @@
 	  } = await getHash;
 
 	  try {
-	    const str = sessionStorage.getItem('sczh:data');
+	    const str = localStorage.getItem('sczh:data');
 	    if (!str) return false;
 	    data = JSON.parse(str);
 
 	    if (data.hash !== hash) {
 	      data = null;
-	      sessionStorage.removeItem('sczh:data');
+	      localStorage.removeItem('sczh:data');
 	      localStorage.removeItem('sczh:data');
 	      return false;
 	    }
@@ -638,7 +638,7 @@
 	  const str = JSON.stringify(data);
 
 	  try {
-	    sessionStorage.setItem('sczh:data', str);
+	    localStorage.setItem('sczh:data', str);
 	  } catch (err) {
 	    console.log(err);
 	  }
